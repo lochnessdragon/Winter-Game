@@ -1,0 +1,10 @@
+
+# IDE
+.vscode/
+
+# libraries
+engine/lib/*
+!/engine/lib/glad
+
+# build files
+build/
