@@ -8,7 +8,7 @@ Object::Object(glm::vec3 position, glm::vec3 scale, glm::vec3 rotation, Mesh& me
 Object::~Object() {}
 
 void Object::calculateModelMat() {
-    this->modelMat = glm::mat4(1.0f);
+    this->modelMat = glm::identity<glm::mat4>();
 
     modelMat = glm::translate(modelMat, position);
     modelMat = glm::rotate(modelMat, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));

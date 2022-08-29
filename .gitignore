@@ -1,6 +1,7 @@
-
 # IDE
 .vscode/
+.vs/
+CMakeUserPresets.json
 
 # libraries
 engine/lib/*

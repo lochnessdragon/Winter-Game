@@ -2,20 +2,38 @@ cmake_minimum_required(VERSION 3.2)
 
 project(Engine)
 
-add_subdirectory(lib/glfw/)
+function(CheckDep depName)
+  if( NOT DEFINED ${depName}_DIR )
+    # error out
+    message(SEND_ERROR "${depName} couldn't be found, set the ${depName}_DIR variable to the location of the ${depName} src tree.")
+  endif()
+endfunction()
 
-add_subdirectory(lib/glm/)
+function(AddDep depName)
+  CheckDep(${depName})
+  if( DEFINED ${depName}_DIR)
+    add_subdirectory(${${depName}_DIR} lib/${depName})
+  endif()
+endfunction()
 
+AddDep(GLFW)
+AddDep(GLM)
+CheckDep(STB)
+# add_subdirectory(lib/glfw/)
+#
+# add_subdirectory(lib/glm/)
+#
 add_subdirectory(lib/glad/)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
 add_library(Engine STATIC ${SOURCES})
-target_link_libraries(Engine glfw Glad glm GL)
-target_include_directories(Engine PUBLIC "include/" "lib/glfw/include" "lib/glad/include" "lib/glm" "lib/stb")
+target_link_libraries(Engine glfw Glad glm)
+target_include_directories(Engine PUBLIC "include/" "${GLFW_DIR}/include" "lib/glad/include" "${GLM_DIR}" ${STB_DIR})
 
 if( CMAKE_COMPILER_IS_GNUCC )
     target_compile_options(Engine PRIVATE -Wall -Wextra)
+    target_link_libraries(Engine GL)
 endif()
 
 if( MSVC )

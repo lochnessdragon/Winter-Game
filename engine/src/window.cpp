@@ -12,6 +12,9 @@ void Window::glfwErrorCallback(int e, const char *d) {
 
 void Window::glfwResizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
+
+    Window* windowWrapper = (Window*) glfwGetWindowUserPointer(window);
+    windowWrapper->windowResizeEvent.dispatch({ width, height });
 }
 
 Window::Window(const std::string& title, int width, int height) {
@@ -35,6 +38,8 @@ Window::Window(const std::string& title, int width, int height) {
     }
 
     glfwSetFramebufferSizeCallback(this->handle, Window::glfwResizeCallback);
+
+    glfwSetWindowUserPointer(this->handle, this);
 
     glfwMakeContextCurrent(this->handle);
 

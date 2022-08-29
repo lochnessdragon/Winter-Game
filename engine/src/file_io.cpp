@@ -10,7 +10,7 @@ void write_file(const std::string& filename, const char* data) {
     if(file.is_open()) {
         file << data;
     } else {
-        throw std::runtime_error("Failed to write to file!");
+        throw std::runtime_error(std::string("Failed to write to file: ") + filename);
     }
 
     file.close();
@@ -27,14 +27,14 @@ char* read_file(const std::string& filename) {
         std::streampos size = file.tellg();
         file.seekg(0, std::ios::beg);
 
-        data = new char [size + 1];
+        data = new char [(int)size + 1];
 
         file.read(data, size);
         data[size] = '\0';
     } else {
-        throw std::runtime_error("Failed to read file!");
+        throw std::runtime_error(std::string("Failed to read file: ") + filename);
     }
-    
+
     file.close();
 
     return data;

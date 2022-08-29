@@ -20,7 +20,7 @@ Camera::~Camera() {
 }
 
 void Camera::calculateViewMat() {
-    this->viewMat = glm::mat4(1.0f);
+    this->viewMat = glm::identity<glm::mat4>();
 
     // glm::rotate(this->viewMat, glm::radians(this->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
     // glm::rotate(this->viewMat, glm::radians(this->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
