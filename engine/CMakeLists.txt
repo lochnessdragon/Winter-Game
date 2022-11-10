@@ -37,5 +37,5 @@ if( CMAKE_COMPILER_IS_GNUCC )
 endif()
 
 if( MSVC )
-    target_compile_options(Engine PRIVATE /W4)
+    target_compile_options(Engine PRIVATE /W4 /ZI)
 endif()

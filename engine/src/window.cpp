@@ -17,6 +17,11 @@ void Window::glfwResizeCallback(GLFWwindow* window, int width, int height) {
     windowWrapper->windowResizeEvent.dispatch({ width, height });
 }
 
+void Window::glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    Window* windowWrapper = (Window*)glfwGetWindowUserPointer(window);
+    windowWrapper->keyPressedEvent.dispatch({key, scancode, action, mods});
+}
+
 Window::Window(const std::string& title, int width, int height) {
     glfwSetErrorCallback(Window::glfwErrorCallback);
 
@@ -38,6 +43,7 @@ Window::Window(const std::string& title, int width, int height) {
     }
 
     glfwSetFramebufferSizeCallback(this->handle, Window::glfwResizeCallback);
+    glfwSetKeyCallback(this->handle, Window::glfwKeyCallback);
 
     glfwSetWindowUserPointer(this->handle, this);
 

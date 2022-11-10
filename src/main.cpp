@@ -35,7 +35,7 @@ int main() {
         commonShader.use();
 
         glm::ivec2 winSize = win.getWindowSize();
-        Camera camera(glm::vec3(4.0f, 4.0f, 100.0f), glm::vec3(0.0f), winSize.x / winSize.y, glm::radians(120.0f), 0.1f, 1000.0f);
+        Camera camera(&win, glm::vec3(4.0f, 0.0f, 10.0f), glm::vec3(0.0f), winSize.x / winSize.y, glm::radians(120.0f), 0.1f, 1000.0f);
 
         glClearColor(0.1f, 0.7f, 0.7f, 1.0f);
 

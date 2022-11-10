@@ -14,7 +14,10 @@ struct WindowResizeEventData {
 };
 
 struct KeyEventData {
-
+    int key;
+    int scancode;
+    int action;
+    int mods;
 };
 
 class Window {
@@ -25,6 +28,7 @@ private:
 
     static void glfwErrorCallback(int e, const char *d);
     static void glfwResizeCallback(GLFWwindow* window, int width, int height);
+    static void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
     EventDispatcher<WindowResizeEventData> windowResizeEvent;
     EventDispatcher<KeyEventData> keyPressedEvent;

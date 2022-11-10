@@ -15,7 +15,7 @@ if( CMAKE_COMPILER_IS_GNUCC )
 endif()
 
 if( MSVC )
-    target_compile_options(Minecraft PRIVATE /W4)
+    target_compile_options(Minecraft PRIVATE /W4 /ZI)
     set_property(GLOBAL PROPERTY VS_STARTUP_PROJECT "Minecraft")
     set_property(TARGET Minecraft PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     message("Setting VS Working Dir to: ${CMAKE_CURRENT_SOURCE_DIR}")
