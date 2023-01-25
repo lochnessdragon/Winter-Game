@@ -18,6 +18,8 @@ endfunction()
 
 AddDep(GLFW)
 AddDep(GLM)
+AddDep(ENTT)
+AddDep(SPDLOG)
 CheckDep(STB)
 # add_subdirectory(lib/glfw/)
 #
@@ -32,10 +34,22 @@ target_link_libraries(Engine glfw Glad glm)
 target_include_directories(Engine PUBLIC "include/" "${GLFW_DIR}/include" "lib/glad/include" "${GLM_DIR}" ${STB_DIR})
 
 if( CMAKE_COMPILER_IS_GNUCC )
+    message(STATUS "Linux build detected: " ${CMAKE_CXX_COMPILER_ID})
+
     target_compile_options(Engine PRIVATE -Wall -Wextra)
     target_link_libraries(Engine GL)
 endif()
 
 if( MSVC )
-    target_compile_options(Engine PRIVATE /W4 /ZI)
+    # extra debug flags
+    string(REGEX REPLACE "/Z[iI7]" ""
+         CMAKE_CXX_FLAGS_DEBUG
+         "${CMAKE_CXX_FLAGS_DEBUG}")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /ZI")
+    string(REGEX REPLACE "/W[1234]" ""
+         CMAKE_CXX_FLAGS_DEBUG
+         "${CMAKE_CXX_FLAGS_DEBUG}")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W4")
+
+    #target_compile_options(Engine PRIVATE /W4 /ZI)
 endif()
