@@ -2,6 +2,7 @@
 .vscode/
 .vs/
 CMakeUserPresets.json
+.ccls-cache/
 
 # libraries
 engine/lib/*
