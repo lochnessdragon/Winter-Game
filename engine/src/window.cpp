@@ -7,7 +7,7 @@
 uint32_t Window::WINDOW_COUNT = 0;
 
 void Window::glfwErrorCallback(int e, const char *d) {
-    std::cout << "GLFW Error #" << e << ": " << d << std::endl;
+    Log::getRendererLog()->error("GLFW Error#{}: {}", e, d);
 }
 
 void Window::glfwResizeCallback(GLFWwindow* window, int width, int height) {
@@ -26,7 +26,7 @@ Window::Window(const std::string& title, int width, int height) {
     glfwSetErrorCallback(Window::glfwErrorCallback);
 
     if(!glfwInit()) {
-        Log("Error: GLFW Initialization failed");
+        Log::getRendererLog()->error("GLFW Initialization failed");
         throw std::runtime_error("GLFW couldn't init!");
     }
 
@@ -52,7 +52,7 @@ Window::Window(const std::string& title, int width, int height) {
     if(WINDOW_COUNT < 1) {
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
-            Log("Failed to initialize GLAD");
+            Log::getRendererLog()->error("Failed to initialize GLAD");
             throw std::runtime_error("Couldn't initialize opengl functions.");
         }
     }

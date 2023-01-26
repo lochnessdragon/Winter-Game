@@ -6,18 +6,46 @@
 #include <iostream>
 
 // todo: tie camera to window so that the camera will update its aspect ratio with the window.
-Camera::Camera(Window* window, glm::vec3 position, glm::vec3 rotation, float aspect, float fov, float near, float far) {
+Camera::Camera(Window* window, glm::vec3 position, glm::vec3 rotation) {
     this->position = position;
     this->rotation = rotation;
-    this->fov = fov;
-    this->near = near;
-    this->far = far;
-    this->aspect = aspect;
 
+    calculateViewMat();
+}
+
+Camera::~Camera() {
+
+}
+
+void Camera::calculateViewMat() {
+    this->viewMat = glm::identity<glm::mat4>();
+
+    // glm::rotate(this->viewMat, glm::radians(this->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    // glm::rotate(this->viewMat, glm::radians(this->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    // glm::rotate(this->viewMat, glm::radians(this->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    this->viewMat = glm::translate(this->viewMat, -this->position);
+
+    //std::cout << glm::to_string(this->position) << std::endl;
+}
+
+OrthoCamera::OrthoCamera(Window* window, glm::vec3 position, glm::vec3 rotation) : Camera(window, position, rotation) {
+    this->calculateProjMat();
+}
+
+OrthoCamera::~OrthoCamera() {}
+
+void OrthoCamera::calculateProjMat() {
+    projMat = glm::ortho(0, 800, 0, 600);
+}
+
+PerspectiveCamera::PerspectiveCamera(Window* window, glm::vec3 position, glm::vec3 rotation, float aspect, float fov, float near, float far) : aspect(aspect), fov(fov), near(near), far(far), Camera(window, position, rotation) {
+    this->calculateProjMat();
+    
     window->getWindowResizeHandler().addListener([=](const WindowResizeEventData& event) -> void {
-            this->aspect = (float)event.width / (float)event.height;
-            calculateProjMat();
-        });
+        this->aspect = (float)event.width / (float)event.height;
+        calculateProjMat();
+    });
 
     window->getKeyPressedHandler().addListener([=](const KeyEventData& data) -> void {
         switch (data.key) {
@@ -41,27 +69,10 @@ Camera::Camera(Window* window, glm::vec3 position, glm::vec3 rotation, float asp
             break;
         }
     });
-
-    calculateViewMat();
-    calculateProjMat();
 }
 
-Camera::~Camera() {
+PerspectiveCamera::~PerspectiveCamera() {}
 
-}
-
-void Camera::calculateViewMat() {
-    this->viewMat = glm::identity<glm::mat4>();
-
-    // glm::rotate(this->viewMat, glm::radians(this->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    // glm::rotate(this->viewMat, glm::radians(this->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    // glm::rotate(this->viewMat, glm::radians(this->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    this->viewMat = glm::translate(this->viewMat, -this->position);
-
-    std::cout << glm::to_string(this->position) << std::endl;
-}
-
-void Camera::calculateProjMat() {
+void PerspectiveCamera::calculateProjMat() {
     projMat = glm::perspective(this->fov, this->aspect, this->near, this->far);
 }

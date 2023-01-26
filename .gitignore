@@ -3,6 +3,7 @@
 .vs/
 CMakeUserPresets.json
 .ccls-cache/
+user_build.bat
 
 # libraries
 engine/lib/*

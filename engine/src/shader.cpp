@@ -27,13 +27,13 @@ Shader::Shader(const std::string& vertFile, const std::string& fragFile) {
     glGetProgramiv(this->handle, GL_LINK_STATUS, &success);
 
     if(!success) {
-        Log("Error whilst linking shader program");
+        Log::getRendererLog()->error("Error whilst linking shader program");
 
         GLint logSize;
         glGetProgramiv(this->handle, GL_INFO_LOG_LENGTH, &logSize);
         GLchar* buffer = new GLchar[logSize];
         glGetProgramInfoLog(this->handle, logSize, &logSize, buffer);
-        Log(buffer);
+        Log::getRendererLog()->error(buffer);
         delete[] buffer;
 
         throw std::runtime_error("Failed to link shader program!");
@@ -63,13 +63,13 @@ GLuint Shader::compileShader(GLenum type, const char* source) {
     if(!success) {
         switch(type) {
         case GL_VERTEX_SHADER:
-            Log("Error compiling vertex shader!");
+            Log::getRendererLog()->error("Error compiling vertex shader!");
             break;
         case GL_FRAGMENT_SHADER:
-            Log("Error compiling fragment shader!");
+            Log::getRendererLog()->error("Error compiling fragment shader!");
             break;
         default:
-            Log("Error compiling <missing-type> shader!");
+            Log::getRendererLog()->error("Error compiling <missing-type> shader!");
             break;
         }
 
@@ -78,7 +78,7 @@ GLuint Shader::compileShader(GLenum type, const char* source) {
 
         GLchar* buffer = new GLchar [logSize];
         glGetShaderInfoLog(shader, logSize, &logSize, buffer);
-        Log(buffer);
+        Log::getRendererLog()->error(buffer);
         delete[] buffer;
 
         throw std::runtime_error("Shader compilation failed!");

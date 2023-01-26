@@ -16,14 +16,14 @@ function(CheckDep depName pkgName)
   endif()
 endfunction()
 
-function(AddDep targetName depName pkgName libName gitURL)
+function(AddDep targetName depName pkgName libName headerOnly)
   # we need the name of the variable set for the library source directory
   # we need the find_package name
   # we need the target name
   # we need a git source repo to download the file from
   # we need to know whether to link the library or just add the header
 
-  find_package(${pkgName})
+  find_package(${pkgName} QUIET)
   if (NOT ${pkgName}_FOUND)
     if(DEFINED INSTALL_DEPS)
       message(STATUS "Installing: ${depName}.")
@@ -35,7 +35,12 @@ function(AddDep targetName depName pkgName libName gitURL)
         message(SEND_ERROR "${depName} couldn't be found, set the ${depName}_DIR variable to the location of the ${depName} src tree. Or, add -DINSTALL_DEPS=1 to the cmake args for cmake to automatically install the library.")
       else()
         # add the file as a subdirectory
-        add_subdirectory(${${depName}_DIR} lib/${depName})
+		if( NOT headerOnly )
+		  add_subdirectory(${${depName}_DIR} lib/${depName})
+		  target_link_libraries(${targetName} PUBLIC ${libName})
+		else()
+		  target_include_directories(${targetName} PUBLIC "${${depName}_DIR}/")
+		endif()
       endif()
     endif()
   else()
@@ -47,15 +52,15 @@ endfunction()
 
 add_subdirectory(lib/glad/)
 
-file(GLOB_RECURSE SOURCES "src/*.cpp")
+file(GLOB_RECURSE SOURCES "src/*.cpp" "include/*.h")
 
 add_library(Engine STATIC ${SOURCES})
 # add dependencies
-AddDep(Engine GLFW glfw3 glfw)
-AddDep(Engine GLM glm glm)
-AddDep(Engine ENTT EnTT EnTT::EnTT)
-AddDep(Engine SPDLOG spdlog spdlog)
-AddDep(Engine STB stb stb)
+AddDep(Engine GLFW glfw3 glfw 0)
+AddDep(Engine GLM glm glm 0)
+AddDep(Engine ENTT EnTT EnTT::EnTT 0)
+AddDep(Engine SPDLOG spdlog spdlog 0)
+AddDep(Engine STB stb stb 1)
 
 # link glad
 target_link_libraries(Engine PRIVATE Glad)

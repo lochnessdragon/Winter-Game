@@ -22,22 +22,22 @@ int indices[] {
 
 int main() {
     try {
-        Log("Opening Window!");
-        std::cout << "CWD: " << std::filesystem::current_path() << std::endl;
+        Log::init();
+        Log::getGameLog()->info("CWD: {}", std::filesystem::current_path().string());
 
         Window win("Minecraft - v 0.1", 600, 400);
 
         Mesh quad(sizeof(vertices), vertices, sizeof(indices), indices);
         Object obj(glm::vec3(-0.5f, -0.5f, -1.0f), glm::vec3(1.0f), glm::vec3(0.0f), quad);
 
-        Shader commonShader("res/shaders/vertex.vsh", "res/shaders/fragment.fsh");
+        Shader commonShader("res/shaders/vertex.vert", "res/shaders/fragment.frag");
         GLint modelMatId = commonShader.getUniformLocation("modelMat");
         GLint viewMatId = commonShader.getUniformLocation("viewMat");
         GLint projMatId = commonShader.getUniformLocation("projMat");
         commonShader.use();
 
         glm::ivec2 winSize = win.getWindowSize();
-        Camera camera(&win, glm::vec3(4.0f, 0.0f, 10.0f), glm::vec3(0.0f), (float) winSize.x / (float) winSize.y, glm::radians(120.0f), 0.1f, 1000.0f);
+        PerspectiveCamera camera(&win, glm::vec3(4.0f, 0.0f, 10.0f), glm::vec3(0.0f), (float) winSize.x / (float) winSize.y, glm::radians(120.0f), 0.1f, 1000.0f);
 
         glClearColor(0.1f, 0.7f, 0.7f, 1.0f);
 
