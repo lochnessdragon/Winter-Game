@@ -9,6 +9,7 @@
         pkgs.glm
         pkgs.entt
         pkgs.spdlog
-        pkgs.emscripten
+        pkgs.fmt_9
+        #pkgs.emscripten
 	];
 }

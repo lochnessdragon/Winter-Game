@@ -1,4 +1,4 @@
-compile = "cmake . -B./build -DINSTALL_DEPS=1"
+compile = "cmake . -B./build -DINSTALL_DEPS=1 && cmake --build build/"
 run = "./build/Minecraft"
 hidden = ["main", "**/*.o", "**/*.d", ".ccls-cache", "Makefile"]
 

@@ -1,22 +1,10 @@
 cmake_minimum_required(VERSION 3.2)
 
+include(FetchContent)
+
 project(Engine)
 
-function(CheckDep depName pkgName)
-  find_package(${pkgName})
-  if (NOT ${pkgName}_FOUND)
-    if(DEFINED INSTALL_DEPS)
-      message(STATUS "Checking if ${depName} is installed.")
-    elseif( NOT DEFINED ${depName}_DIR )
-      # error out
-      message(SEND_ERROR "${depName} couldn't be found, set the ${depName}_DIR variable to the location of the ${depName} src tree. Or, add -DINSTALL_DEPS=1 to the cmake args for cmake to automatically install the library.")
-    endif()
-  else()
-    message(STATUS "Found package: ${depName}")
-  endif()
-endfunction()
-
-function(AddDep targetName depName pkgName libName headerOnly)
+function(AddDep targetName depName pkgName libName headerOnly gitUrl gitTag)
   # we need the name of the variable set for the library source directory
   # we need the find_package name
   # we need the target name
@@ -26,9 +14,25 @@ function(AddDep targetName depName pkgName libName headerOnly)
   find_package(${pkgName} QUIET)
   if (NOT ${pkgName}_FOUND)
     if(DEFINED INSTALL_DEPS)
-      message(STATUS "Installing: ${depName}.")
+      message(STATUS "Installing: ${depName}...")
       # install the dependency
-      
+      FetchContent_Declare(
+        ${pkgName}
+        GIT_REPOSITORY ${gitUrl}
+        GIT_TAG ${gitTag}
+      )
+
+      FetchContent_MakeAvailable(${pkgName})
+
+      if(headerOnly)
+        # only include the file
+        target_include_directories(${targetName} PUBLIC ${${pkgName}_SOURCE_DIR})
+      else()
+        # build the source
+        add_subdirectory(${${pkgName}_SOURCE_DIR})
+        target_link_libraries(${targetName} PUBLIC ${libName})
+      endif()
+      message(STATUS "Installed: ${depName}!")
     else()
       if( NOT DEFINED ${depName}_DIR )
         # error out
@@ -56,11 +60,17 @@ file(GLOB_RECURSE SOURCES "src/*.cpp" "include/*.h")
 
 add_library(Engine STATIC ${SOURCES})
 # add dependencies
-AddDep(Engine GLFW glfw3 glfw 0)
-AddDep(Engine GLM glm glm 0)
-AddDep(Engine ENTT EnTT EnTT::EnTT 0)
-AddDep(Engine SPDLOG spdlog spdlog 0)
-AddDep(Engine STB stb stb 1)
+AddDep(Engine GLFW glfw3 glfw 0 https://github.com/glfw/glfw.git 57cbded0760a50b9039ee0cb3f3c14f60145567c)
+AddDep(Engine GLM glm glm::glm 0 https://github.com/g-truc/glm.git efec5db081e3aad807d0731e172ac597f6a39447)
+AddDep(Engine ENTT EnTT EnTT::EnTT 0 https://github.com/skypjack/entt.git e48817d518c0ada57665be07ba9961c19f71b502)
+AddDep(Engine SPDLOG spdlog spdlog 0 https://github.com/gabime/spdlog.git 5a589438d2d2abc67bdbec2aad7e2a94800c00ea)
+AddDep(Engine STB stb stb 1 https://github.com/nothings/stb.git 8b5f1f37b5b75829fc72d38e7b5d4bcbf8a26d55)
+
+# if we are on replit then we are going to have to 
+# link libfmt as well
+if(DEFINED ENV{REPL_ID})
+  target_link_libraries(Engine PUBLIC fmt)
+endif()
 
 # link glad
 target_link_libraries(Engine PRIVATE Glad)
