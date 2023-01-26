@@ -10,7 +10,9 @@ function(AddDep targetName depName pkgName libName headerOnly gitUrl gitTag)
   # we need the target name
   # we need a git source repo to download the file from
   # we need to know whether to link the library or just add the header
-
+  # now, emscripten provides a difficult challenge for dependency management
+  # glfw is included in emscripten whilst all the others are not.
+  # therefore we need to avoid installing glfw but we will be FORCED to install the others
   find_package(${pkgName} QUIET)
   if (NOT ${pkgName}_FOUND)
     if(DEFINED INSTALL_DEPS)
@@ -28,11 +30,10 @@ function(AddDep targetName depName pkgName libName headerOnly gitUrl gitTag)
         # only include the file
         target_include_directories(${targetName} PUBLIC ${${pkgName}_SOURCE_DIR})
       else()
-        # build the source
-        add_subdirectory(${${pkgName}_SOURCE_DIR})
+        # link the library
         target_link_libraries(${targetName} PUBLIC ${libName})
       endif()
-      message(STATUS "Installed: ${depName}!")
+      message(STATUS "Installed: ${depName}")
     else()
       if( NOT DEFINED ${depName}_DIR )
         # error out
@@ -60,7 +61,13 @@ file(GLOB_RECURSE SOURCES "src/*.cpp" "include/*.h")
 
 add_library(Engine STATIC ${SOURCES})
 # add dependencies
-AddDep(Engine GLFW glfw3 glfw 0 https://github.com/glfw/glfw.git 57cbded0760a50b9039ee0cb3f3c14f60145567c)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
+  # tell emscripten to link glfw
+  target_compile_options(Engine PUBLIC "-s USE_GLFW=3")
+else()
+  AddDep(Engine GLFW glfw3 glfw 0 https://github.com/glfw/glfw.git 57cbded0760a50b9039ee0cb3f3c14f60145567c)
+endif()
+
 AddDep(Engine GLM glm glm::glm 0 https://github.com/g-truc/glm.git efec5db081e3aad807d0731e172ac597f6a39447)
 AddDep(Engine ENTT EnTT EnTT::EnTT 0 https://github.com/skypjack/entt.git e48817d518c0ada57665be07ba9961c19f71b502)
 AddDep(Engine SPDLOG spdlog spdlog 0 https://github.com/gabime/spdlog.git 5a589438d2d2abc67bdbec2aad7e2a94800c00ea)

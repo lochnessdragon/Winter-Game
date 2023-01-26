@@ -2,7 +2,6 @@
 
 #include <string>
 
-#define SPDLOG_FMT_EXTERNAL
 #include <spdlog/spdlog.h>
 
 class Log {

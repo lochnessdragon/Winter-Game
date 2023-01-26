@@ -3,6 +3,13 @@ cmake_minimum_required(VERSION 3.2)
 project(Minecraft)
 set (CMAKE_CXX_STANDARD 17)
 
+if(CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
+  message(STATUS "C++ compiler: Emscripten")
+  set(CMAKE_CXX_COMPILER_ID "Emscripten")
+else()
+  message(STATUS "C++ compiler: ${CMAKE_CXX_COMPILER_ID}")
+endif()
+
 add_subdirectory(engine/)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
