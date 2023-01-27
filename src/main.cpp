@@ -1,5 +1,6 @@
 #include <filesystem>
 #include <iostream>
+#include <memory>
 
 #include <camera.h>
 #include <log.h>
@@ -8,6 +9,7 @@
 #include <shader.h>
 #include <window.h>
 
+// /nix/store/fif8p12nknb7cw8ffbxbsbrhr2gml3v4-emscripten-3.1.17/share/emscripten/cache/
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #include <emscripten/html5.h>
@@ -18,64 +20,101 @@ float vertices[] = {-1.0f, -1.0f, 0.0f, 1.0f,  -1.0f, 0.0f,
 
 int indices[]{0, 1, 2, 0, 2, 3};
 
-int main() {
-  try {
-    Log::init();
-    Log::getGameLog()->info("CWD: {}",
-                            std::filesystem::current_path().string());
+class Application {
+private:
+  std::shared_ptr<Mesh> quad;
+  std::shared_ptr<Object> obj;
+  std::shared_ptr<Shader> commonShader;
+  GLint modelMatId;
+  GLint viewMatId;
+  GLint projMatId;
 
-    Window win("Minecraft - v 0.1", 600, 400);
+  std::shared_ptr<PerspectiveCamera> camera;
+  double deltaTime;
+  double lastTime;
 
-    Mesh quad(sizeof(vertices), vertices, sizeof(indices), indices);
-    Object obj(glm::vec3(-0.5f, -0.5f, -1.0f), glm::vec3(1.0f), glm::vec3(0.0f),
-               quad);
+  static Application* SINGLETON;
 
-    Shader commonShader("res/shaders/vertex.vert", "res/shaders/fragment.frag");
-    GLint modelMatId = commonShader.getUniformLocation("modelMat");
-    GLint viewMatId = commonShader.getUniformLocation("viewMat");
-    GLint projMatId = commonShader.getUniformLocation("projMat");
-    commonShader.use();
+public:
+  std::shared_ptr<Window> win;
+  
+  Application() {
+	SINGLETON = this;
+    win = std::make_shared<Window>("Minecraft - v 0.1", 600, 400);
 
-    glm::ivec2 winSize = win.getWindowSize();
-    PerspectiveCamera camera(&win, glm::vec3(4.0f, 0.0f, 10.0f),
-                             glm::vec3(0.0f),
-                             (float)winSize.x / (float)winSize.y,
-                             glm::radians(120.0f), 0.1f, 1000.0f);
+    quad = std::make_shared<Mesh>(sizeof(vertices), vertices, sizeof(indices), indices);
+    obj = std::make_shared<Object>(glm::vec3(-0.5f, -0.5f, -1.0f), glm::vec3(1.0f), glm::vec3(0.0f), quad);
+
+    commonShader = std::make_shared<Shader>("res/shaders/vertex.vert", "res/shaders/fragment.frag");
+    modelMatId = commonShader->getUniformLocation("modelMat");
+    viewMatId = commonShader->getUniformLocation("viewMat");
+    projMatId = commonShader->getUniformLocation("projMat");
+    commonShader->use();
+
+    glm::ivec2 winSize = win->getWindowSize();
+    camera = std::make_shared<PerspectiveCamera>(win, glm::vec3(4.0f, 0.0f, 10.0f), glm::vec3(0.0f),
+           (float)winSize.x / (float)winSize.y, glm::radians(120.0f), 0.1f,
+           1000.0f);
 
     glClearColor(0.1f, 0.7f, 0.7f, 1.0f);
 
-    double deltaTime = 0.0f;
-    double lastTime = glfwGetTime();
+    deltaTime = 0.0f;
+    lastTime = glfwGetTime();
+  }
 
-    while (!win.shouldClose()) {
-
-      // tick
-      {
-        double now = glfwGetTime();
-        deltaTime = now - lastTime;
-        lastTime = now;
-      }
-
-      // render
-      glClear(GL_COLOR_BUFFER_BIT);
-
-      obj.tick();
-
-      commonShader.use();
-      commonShader.loadUniform(modelMatId, obj.getModelMat());
-      commonShader.loadUniform(viewMatId, camera.getViewMat());
-      commonShader.loadUniform(projMatId, camera.getProjMat());
-
-      quad.bind();
-      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-      quad.unbind();
-
-      win.swap();
-
-      glfwPollEvents();
+  void update() {
+    // tick
+    {
+      double now = glfwGetTime();
+      deltaTime = now - lastTime;
+      lastTime = now;
     }
 
-    return 0;
+    // render
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    obj->tick();
+
+    commonShader->use();
+    commonShader->loadUniform(modelMatId, obj->getModelMat());
+    commonShader->loadUniform(viewMatId, camera->getViewMat());
+    commonShader->loadUniform(projMatId, camera->getProjMat());
+
+    quad->bind();
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    quad->unbind();
+
+    win->swap();
+
+    glfwPollEvents();
+  }
+
+  static Application* instance() { return Application::SINGLETON; };
+};
+
+Application* Application::SINGLETON = nullptr;
+
+void game_loop() {
+	Application::instance()->update();
+}
+	  
+int main() {
+  try {
+    Log::init();
+    // Log::getGameLog()->info("CWD: {}",
+    // std::filesystem::current_path().string());
+    Log::getGameLog()->info("Game startup...");
+    Application app;
+
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(game_loop, 0, false);
+#else
+    while (!app.win->shouldClose()) {
+      app.update()
+    }
+#endif
+
+        return 0;
   } catch (std::exception &e) {
     std::cout << "FATAL ERROR: " << e.what() << std::endl;
   }

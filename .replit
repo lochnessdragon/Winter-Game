@@ -1,5 +1,5 @@
-compile = "cmake . -B./build -DINSTALL_DEPS=1 && cmake --build build/"
-run = "./build/Minecraft"
+compile = "emcmake cmake . -B./build -DINSTALL_DEPS=1 && cmake --build build/"
+run = "emrun ./build/Minecraft.html --no_browser"
 hidden = ["main", "**/*.o", "**/*.d", ".ccls-cache", "Makefile"]
 
 [nix]

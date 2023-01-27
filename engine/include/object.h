@@ -5,6 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "mesh.h"
+#include "memory"
 
 class Object {
 private:
@@ -12,7 +13,7 @@ private:
     glm::vec3 scale;
     glm::vec3 rotation;
 
-    Mesh& mesh;
+    std::shared_ptr<Mesh> mesh;
 
     glm::mat4 modelMat;
 
@@ -22,7 +23,7 @@ protected:
     void calculateModelMat();
 
 public:
-    Object(glm::vec3 position, glm::vec3 scale, glm::vec3 rotation, Mesh& mesh);
+    Object(glm::vec3 position, glm::vec3 scale, glm::vec3 rotation, std::shared_ptr<Mesh> mesh);
     ~Object();
 
     // this method should really be called at the end of a tick, not the beginning

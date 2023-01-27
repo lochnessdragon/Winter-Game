@@ -6,7 +6,7 @@
 #include <iostream>
 
 // todo: tie camera to window so that the camera will update its aspect ratio with the window.
-Camera::Camera(Window* window, glm::vec3 position, glm::vec3 rotation) {
+Camera::Camera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation) {
     this->position = position;
     this->rotation = rotation;
 
@@ -29,7 +29,7 @@ void Camera::calculateViewMat() {
     //std::cout << glm::to_string(this->position) << std::endl;
 }
 
-OrthoCamera::OrthoCamera(Window* window, glm::vec3 position, glm::vec3 rotation) : Camera(window, position, rotation) {
+OrthoCamera::OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation) : Camera(window, position, rotation) {
     this->calculateProjMat();
 }
 
@@ -39,7 +39,7 @@ void OrthoCamera::calculateProjMat() {
     projMat = glm::ortho(0, 800, 0, 600);
 }
 
-PerspectiveCamera::PerspectiveCamera(Window* window, glm::vec3 position, glm::vec3 rotation, float aspect, float fov, float near, float far) : aspect(aspect), fov(fov), near(near), far(far), Camera(window, position, rotation) {
+PerspectiveCamera::PerspectiveCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, float aspect, float fov, float near, float far) : aspect(aspect), fov(fov), near(near), far(far), Camera(window, position, rotation) {
     this->calculateProjMat();
     
     window->getWindowResizeHandler().addListener([=](const WindowResizeEventData& event) -> void {

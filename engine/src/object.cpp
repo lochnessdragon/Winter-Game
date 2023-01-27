@@ -1,6 +1,6 @@
 #include <object.h>
 
-Object::Object(glm::vec3 position, glm::vec3 scale, glm::vec3 rotation, Mesh& mesh) : position(position), scale(scale), rotation(rotation), mesh(mesh) {
+Object::Object(glm::vec3 position, glm::vec3 scale, glm::vec3 rotation, std::shared_ptr<Mesh> mesh) : position(position), scale(scale), rotation(rotation), mesh(mesh) {
     calculateModelMat();
     this->dirty = false;
 }

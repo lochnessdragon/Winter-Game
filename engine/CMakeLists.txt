@@ -63,7 +63,7 @@ add_library(Engine STATIC ${SOURCES})
 # add dependencies
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
   # tell emscripten to link glfw
-  target_compile_options(Engine PUBLIC "-s USE_GLFW=3")
+  target_link_options(Engine PUBLIC "-sUSE_GLFW=3")
 else()
   AddDep(Engine GLFW glfw3 glfw 0 https://github.com/glfw/glfw.git 57cbded0760a50b9039ee0cb3f3c14f60145567c)
 endif()
@@ -75,9 +75,9 @@ AddDep(Engine STB stb stb 1 https://github.com/nothings/stb.git 8b5f1f37b5b75829
 
 # if we are on replit then we are going to have to 
 # link libfmt as well
-if(DEFINED ENV{REPL_ID})
-  target_link_libraries(Engine PUBLIC fmt)
-endif()
+#if(DEFINED ENV{REPL_ID})
+#  target_link_libraries(Engine PUBLIC fmt)
+#endif()
 
 # link glad
 target_link_libraries(Engine PRIVATE Glad)

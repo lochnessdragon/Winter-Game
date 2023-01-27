@@ -13,7 +13,7 @@ protected:
     glm::vec3 rotation;
 
 public:
-    Camera(Window* window, glm::vec3 position, glm::vec3 rotation);
+    Camera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation);
     ~Camera();
 
     virtual void calculateViewMat();
@@ -32,7 +32,7 @@ class OrthoCamera : public Camera {
 private:
 
 public:
-    OrthoCamera(Window* window, glm::vec3 position, glm::vec3 rotation);
+    OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation);
     ~OrthoCamera();
 
     void calculateProjMat();
@@ -45,7 +45,7 @@ private:
     float near;
     float far;
 public:
-    PerspectiveCamera(Window* window, glm::vec3 position, glm::vec3 rotation, float aspect, float fov, float near, float far);
+    PerspectiveCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, float aspect, float fov, float near, float far);
     ~PerspectiveCamera();
 
     void calculateProjMat();

@@ -6,10 +6,6 @@
 		pkgs.gdb
 		pkgs.gnumake
         pkgs.cmake
-        # pkgs.glfw
-        # pkgs.glm
-        # pkgs.entt
-        # pkgs.spdlog
-        # pkgs.fmt_9
+        pkgs.python39
 	];
 }

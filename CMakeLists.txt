@@ -10,6 +10,11 @@ else()
   message(STATUS "C++ compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
+  # tell emscripten to create an html file
+  set(CMAKE_EXECUTABLE_SUFFIX ".html")
+endif()
+
 add_subdirectory(engine/)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
@@ -17,6 +22,10 @@ file(GLOB_RECURSE SOURCES "src/*.cpp")
 add_executable(Minecraft ${SOURCES})
 target_link_libraries(Minecraft Engine)
 include_directories(Minecraft "engine/include/")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
+  # tell emscripten to link glfw
+  target_link_options(Minecraft PUBLIC "-sUSE_GLFW=3")
+endif()
 
 if( CMAKE_COMPILER_IS_GNUCC )
     # there have been some weird bugs before w/ cmake reporting gcc on windows.
