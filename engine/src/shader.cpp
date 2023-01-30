@@ -14,8 +14,8 @@ Shader::Shader(const std::string& vertFile, const std::string& fragFile) {
 
 	// prepend the correct version to the beginning of the source file
 	#ifdef PLATFORM_WEB
-	vertSrc.insert(0, "#version 320 es\n");
-	fragSrc.insert(0, "#version 320 es\n");
+	vertSrc.insert(0, "#version 300 es\n");
+	fragSrc.insert(0, "#version 300 es\n");
 	#else
 	vertSrc.insert(0, "#version 330 core\n");
 	fragSrc.insert(0, "#version 330 core\n");

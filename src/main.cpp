@@ -40,7 +40,7 @@ public:
   
   Application() {
 	SINGLETON = this;
-    win = std::make_shared<Window>("Minecraft - v 0.1", 600, 400);
+    win = std::make_shared<Window>("Game Engine - v 0.1", 600, 400);
 	Log::getGameLog()->trace("Surface created");
 
     quad = std::make_shared<Mesh>(sizeof(vertices), vertices, sizeof(indices), indices);
@@ -54,6 +54,7 @@ public:
     projMatId = commonShader->getUniformLocation("projMat");
     commonShader->use();
 
+	Log::getGameLog()->trace("Creating a camera");
     glm::ivec2 winSize = win->getWindowSize();
     camera = std::make_shared<PerspectiveCamera>(win, glm::vec3(4.0f, 0.0f, 10.0f), glm::vec3(0.0f),
            (float)winSize.x / (float)winSize.y, glm::radians(120.0f), 0.1f,
@@ -63,30 +64,44 @@ public:
 
     deltaTime = 0.0f;
     lastTime = glfwGetTime();
+
+	Log::getGameLog()->trace("Initialization finished");
   }
 
   void update() {
     // tick
+	Log::getGameLog()->trace("Tick");
     {
       double now = glfwGetTime();
       deltaTime = now - lastTime;
       lastTime = now;
     }
 
+	obj->tick();
+
     // render
+	Log::getRendererLog()->trace("Render");
     glClear(GL_COLOR_BUFFER_BIT);
 
-    obj->tick();
-
+	Log::getRendererLog()->trace("Setting up the shader");
     commonShader->use();
+	Log::getRendererLog()->trace("Uploading model matrix");
     commonShader->loadUniform(modelMatId, obj->getModelMat());
+	Log::getRendererLog()->trace("Uploading view matrix");
     commonShader->loadUniform(viewMatId, camera->getViewMat());
+	Log::getRendererLog()->trace("Uploading projection matrix");
     commonShader->loadUniform(projMatId, camera->getProjMat());
 
+	Log::getRendererLog()->trace("Binding the quad");
     quad->bind();
+	
+	Log::getRendererLog()->trace("Drawing the quad");
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	
+	Log::getRendererLog()->trace("Unbinding the quad");
     quad->unbind();
 
+	Log::getRendererLog()->trace("Swapping surfaces");
     win->swap();
 
     glfwPollEvents();
