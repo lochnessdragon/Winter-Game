@@ -1,6 +1,13 @@
 #pragma once
 
+#include "platform.h"
+
+#ifndef PLATFORM_WEB
 #include <glad/glad.h>
+#else
+#include <GLES3/gl3.h>
+#endif
+
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 

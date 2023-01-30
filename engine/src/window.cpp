@@ -49,6 +49,7 @@ Window::Window(const std::string& title, int width, int height) {
 
     glfwMakeContextCurrent(this->handle);
 
+	#ifndef PLATFORM_WEB
     if(WINDOW_COUNT < 1) {
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
@@ -56,6 +57,7 @@ Window::Window(const std::string& title, int width, int height) {
             throw std::runtime_error("Couldn't initialize opengl functions.");
         }
     }
+	#endif
 
     WINDOW_COUNT++;
 }

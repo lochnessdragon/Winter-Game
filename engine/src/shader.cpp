@@ -2,11 +2,8 @@
 
 #include <stdexcept>
 
-#include <glad/glad.h>
-
 #include <file_io.h>
 #include <log.h>
-#include <platform.h>
 
 Shader::Shader(const std::string& vertFile, const std::string& fragFile) {
     std::string vertSrc = std::string(read_file(vertFile));

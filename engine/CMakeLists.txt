@@ -55,7 +55,9 @@ function(AddDep targetName depName pkgName libName headerOnly gitUrl gitTag)
   endif()
 endfunction()
 
-add_subdirectory(lib/glad/)
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
+	add_subdirectory(lib/glad/)
+endif()
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "include/*.h")
 
@@ -79,11 +81,14 @@ AddDep(Engine STB stb stb 1 https://github.com/nothings/stb.git 8b5f1f37b5b75829
 #  target_link_libraries(Engine PUBLIC fmt)
 #endif()
 
-# link glad
-target_link_libraries(Engine PRIVATE Glad)
+# link glad (but not for the web)
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
+	target_link_libraries(Engine PRIVATE Glad)
+	target_include_directories(Engine PUBLIC "lib/glad/include")
+endif()
 
 # setup includes
-target_include_directories(Engine PUBLIC "include/" "lib/glad/include")
+target_include_directories(Engine PUBLIC "include/")
 
 if( CMAKE_COMPILER_IS_GNUCC )
     message(STATUS "Linux build detected: " ${CMAKE_CXX_COMPILER_ID})
