@@ -13,6 +13,8 @@ endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
   # tell emscripten to create an html file
   set(CMAKE_EXECUTABLE_SUFFIX ".html")
+  # test if em_cache is configured
+  message(STATUS "EM_CACHE = $ENV{EM_CACHE}")
 endif()
 
 add_subdirectory(engine/)
