@@ -1,5 +1,4 @@
-#version 330 core
-
+// version directive handled by shader class
 out vec4 FragColor;
 
 void main() {

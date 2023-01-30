@@ -26,7 +26,8 @@ target_link_libraries(Minecraft Engine)
 include_directories(Minecraft "engine/include/")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
   # tell emscripten to link glfw
-  target_link_options(Minecraft PUBLIC "-sUSE_GLFW=3")
+  # target_compile_options(Minecraft PUBLIC "--preload-file res@/res")
+  target_link_options(Minecraft PUBLIC "-sUSE_GLFW=3" "-sMAX_WEBGL_VERSION=2" "--preload-file" "../res@res")
 endif()
 
 if( CMAKE_COMPILER_IS_GNUCC )

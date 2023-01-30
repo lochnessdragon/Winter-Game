@@ -6,16 +6,29 @@
 
 #include <file_io.h>
 #include <log.h>
+#include <platform.h>
 
 Shader::Shader(const std::string& vertFile, const std::string& fragFile) {
-    char* vertSrc = read_file(vertFile);
-    char* fragSrc = read_file(fragFile);
+    std::string vertSrc = std::string(read_file(vertFile));
+    std::string fragSrc = std::string(read_file(fragFile));
 
-    GLuint vertObj = compileShader(GL_VERTEX_SHADER, vertSrc);
-    GLuint fragObj = compileShader(GL_FRAGMENT_SHADER, fragSrc);
+	// prepend the correct version to the beginning of the source file
+	#ifdef PLATFORM_WEB
+	vertSrc.insert(0, "#version 320 es\n");
+	fragSrc.insert(0, "#version 320 es\n");
+	#else
+	vertSrc.insert(0, "#version 330 core\n");
+	fragSrc.insert(0, "#version 330 core\n");
+	#endif
 
-    delete[] vertSrc;
-    delete[] fragSrc;
+	Log::getRendererLog()->info("Transformed vertex shader: {}", vertSrc);
+	Log::getRendererLog()->info("Transformed fragment shader: {}", fragSrc);
+
+    GLuint vertObj = compileShader(GL_VERTEX_SHADER, vertSrc.c_str());
+    GLuint fragObj = compileShader(GL_FRAGMENT_SHADER, fragSrc.c_str());
+
+    // delete[] vertSrc;
+    // delete[] fragSrc;
 
     this->handle = glCreateProgram();
     glAttachShader(this->handle, vertObj);

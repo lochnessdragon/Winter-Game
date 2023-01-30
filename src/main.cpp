@@ -41,10 +41,13 @@ public:
   Application() {
 	SINGLETON = this;
     win = std::make_shared<Window>("Minecraft - v 0.1", 600, 400);
+	Log::getGameLog()->trace("Surface created");
 
     quad = std::make_shared<Mesh>(sizeof(vertices), vertices, sizeof(indices), indices);
+	Log::getGameLog()->trace("Creating object");
     obj = std::make_shared<Object>(glm::vec3(-0.5f, -0.5f, -1.0f), glm::vec3(1.0f), glm::vec3(0.0f), quad);
 
+	Log::getGameLog()->info("Loading shaders");
     commonShader = std::make_shared<Shader>("res/shaders/vertex.vert", "res/shaders/fragment.frag");
     modelMatId = commonShader->getUniformLocation("modelMat");
     viewMatId = commonShader->getUniformLocation("viewMat");
@@ -101,8 +104,7 @@ void game_loop() {
 int main() {
   try {
     Log::init();
-    // Log::getGameLog()->info("CWD: {}",
-    // std::filesystem::current_path().string());
+    Log::getGameLog()->info("CWD: {}", std::filesystem::current_path().string());
     Log::getGameLog()->info("Game startup...");
     Application app;
 
