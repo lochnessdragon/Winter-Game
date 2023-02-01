@@ -65,7 +65,8 @@ add_library(Engine STATIC ${SOURCES})
 # add dependencies
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
   # tell emscripten to link glfw and webgl2
-  target_link_options(Engine PUBLIC "-sUSE_GLFW=3" "-sMAX_WEBGL_VERSION=2")
+  target_compile_options(Engine PUBLIC "-fwasm-exceptions")
+  target_link_options(Engine PUBLIC "-sUSE_GLFW=3" "-sMAX_WEBGL_VERSION=2" "-fwasm-exceptions")
 else()
   AddDep(Engine GLFW glfw3 glfw 0 https://github.com/glfw/glfw.git 57cbded0760a50b9039ee0cb3f3c14f60145567c)
 endif()

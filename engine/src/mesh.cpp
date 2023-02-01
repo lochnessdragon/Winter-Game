@@ -23,7 +23,9 @@ Mesh::~Mesh() {
 }
 
 void Mesh::bind() {
+	Log::getRendererLog()->trace("Binding mesh: {}", this->handle);
     glBindVertexArray(this->handle);
+	Log::getRendererLog()->trace("Mesh bound.");
 }
 
 void Mesh::unbind() {
