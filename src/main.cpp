@@ -67,6 +67,7 @@ public:
 
   void update() {
     // tick
+	Log::getGameLog()->info("Tick");
     {
       double now = glfwGetTime();
       deltaTime = now - lastTime;
