@@ -10,12 +10,12 @@
 
 class Mesh {
 private: 
-    GLuint handle;
     GLuint vbos[2];
 public:
     Mesh(const GLuint vertices_length, const float* vertices, const GLuint indices_length, const int* indices);
     ~Mesh();
 
+    GLuint handle;
     void bind();
     void unbind();
 };

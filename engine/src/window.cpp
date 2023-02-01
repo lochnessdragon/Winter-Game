@@ -49,6 +49,9 @@ Window::Window(const std::string& title, int width, int height) {
 
     glfwMakeContextCurrent(this->handle);
 
+	// enable vsync
+	glfwSwapInterval(1);
+
 	#ifndef PLATFORM_WEB
     if(WINDOW_COUNT < 1) {
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))

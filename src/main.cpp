@@ -33,19 +33,16 @@ private:
   double deltaTime;
   double lastTime;
 
-  static Application* SINGLETON;
-
 public:
   std::shared_ptr<Window> win;
   
   Application() {
-	SINGLETON = this;
     win = std::make_shared<Window>("Game Engine - v 0.1", 600, 400);
 	Log::getGameLog()->trace("Surface created");
 
     quad = std::make_shared<Mesh>(sizeof(vertices), vertices, sizeof(indices), indices);
 	Log::getGameLog()->trace("Creating object");
-    obj = std::make_shared<Object>(glm::vec3(-0.5f, -0.5f, -1.0f), glm::vec3(1.0f), glm::vec3(0.0f), quad);
+    obj = std::make_shared<Object>(glm::vec3(-0.5f, -0.5f, -1.0f), glm::vec3(1.0f), glm::vec3(0.0f));
 
 	Log::getGameLog()->info("Loading shaders");
     commonShader = std::make_shared<Shader>("res/shaders/vertex.vert", "res/shaders/fragment.frag");
@@ -70,7 +67,6 @@ public:
 
   void update() {
     // tick
-	Log::getGameLog()->trace("Tick");
     {
       double now = glfwGetTime();
       deltaTime = now - lastTime;
@@ -80,40 +76,30 @@ public:
 	obj->tick();
 
     // render
-	Log::getRendererLog()->trace("Render");
     glClear(GL_COLOR_BUFFER_BIT);
 
-	Log::getRendererLog()->trace("Setting up the shader");
     commonShader->use();
-	Log::getRendererLog()->trace("Uploading model matrix");
     commonShader->loadUniform(modelMatId, obj->getModelMat());
-	Log::getRendererLog()->trace("Uploading view matrix");
     commonShader->loadUniform(viewMatId, camera->getViewMat());
-	Log::getRendererLog()->trace("Uploading projection matrix");
     commonShader->loadUniform(projMatId, camera->getProjMat());
 
-	Log::getRendererLog()->trace("Binding the quad");
     quad->bind();
 	
-	Log::getRendererLog()->trace("Drawing the quad");
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	
-	Log::getRendererLog()->trace("Unbinding the quad");
     quad->unbind();
 
-	Log::getRendererLog()->trace("Swapping surfaces");
     win->swap();
 
     glfwPollEvents();
   }
 
-  static Application* instance() { return Application::SINGLETON; };
 };
 
-Application* Application::SINGLETON = nullptr;
+Application* app;
 
 void game_loop() {
-	Application::instance()->update();
+	app->update();
 }
 	  
 int main() {
@@ -121,7 +107,7 @@ int main() {
     Log::init();
     Log::getGameLog()->info("CWD: {}", std::filesystem::current_path().string());
     Log::getGameLog()->info("Game startup...");
-    Application app;
+    app = new Application();
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(game_loop, 0, false);
