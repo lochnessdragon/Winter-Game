@@ -32,6 +32,7 @@ private:
   std::shared_ptr<PerspectiveCamera> camera;
   double deltaTime;
   double lastTime;
+  double timer;
 
 public:
   std::shared_ptr<Window> win;
@@ -61,18 +62,24 @@ public:
 
     deltaTime = 0.0f;
     lastTime = glfwGetTime();
+	timer = 0;
 
 	Log::getGameLog()->trace("Initialization finished");
   }
 
   void update() {
     // tick
-	Log::getGameLog()->info("Tick");
-    {
+	{
       double now = glfwGetTime();
       deltaTime = now - lastTime;
       lastTime = now;
     }
+
+	timer += deltaTime;
+	if (timer > 1) {
+		Log::getGameLog()->info("Tick");
+		timer = 0;
+	}
 
 	obj->tick();
 
