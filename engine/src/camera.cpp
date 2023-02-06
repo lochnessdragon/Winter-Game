@@ -2,6 +2,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <log.h>
 
 #include <iostream>
 
@@ -29,14 +30,19 @@ void Camera::calculateViewMat() {
     //std::cout << glm::to_string(this->position) << std::endl;
 }
 
-OrthoCamera::OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation) : Camera(window, position, rotation) {
+OrthoCamera::OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, glm::ivec2 size) : Camera(window, position, rotation), fbSize(size) {
     this->calculateProjMat();
+
+    window->getWindowResizeHandler().addListener([=](const WindowResizeEventData& event) -> void {
+        this->fbSize = glm::ivec2(event.width, event.height);
+    });
 }
 
 OrthoCamera::~OrthoCamera() {}
 
 void OrthoCamera::calculateProjMat() {
-    projMat = glm::ortho(0, 800, 0, 600);
+    projMat = glm::ortho(0.0f, (float) this->fbSize.x, 0.0f, (float) this->fbSize.y, -1.0f, 1.0f);
+    //Log::getRendererLog()->trace("Projection Mat: {}\n Fb: {}", glm::to_string(projMat), glm::to_string(this->fbSize));
 }
 
 PerspectiveCamera::PerspectiveCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, float aspect, float fov, float near, float far) : aspect(aspect), fov(fov), near(near), far(far), Camera(window, position, rotation) {

@@ -7,6 +7,8 @@
 #include <stdexcept>
 
 Texture::Texture(std::string& filename) {
+	stbi_set_flip_vertically_on_load(true);
+
 	int width;
 	int height;
 	int channelCount;
@@ -15,17 +17,33 @@ Texture::Texture(std::string& filename) {
 		Log::getRendererLog()->error("Failed to load image: {} Error: {}", filename, stbi_failure_reason());
 		throw std::exception("Failed to load image!");
 	}
+
+	this->size = glm::ivec2(width, height);
+	
 	// initialize the Texture
 	glGenTextures(1, &this->handle);
 	this->bind();
 
+	// wrapping
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // shrinking linear or nearest
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // expanding
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-	
+	int textureFormat = 0;
+	switch (channelCount) {
+	case 3:
+		textureFormat = GL_RGB;
+		break;
+	case 4:
+		textureFormat = GL_RGBA;
+		break;
+	default:
+		Log::getRendererLog()->error("Failed to detect the format of texture: {}", filename);
+		throw std::exception("Failed to detect texture format");
+	}
+
+	glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, width, height, 0, textureFormat, GL_UNSIGNED_BYTE, imageData);
 	
 	stbi_image_free(imageData);
 }

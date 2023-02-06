@@ -47,6 +47,8 @@ public:
     void swap();
     glm::ivec2 getWindowSize();
 
+    GLFWwindow* getHandle() { return handle; };
+
     auto& getWindowResizeHandler() { return windowResizeEvent; };
     auto& getKeyPressedHandler() { return keyPressedEvent; };
 };

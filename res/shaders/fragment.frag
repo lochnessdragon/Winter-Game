@@ -1,8 +1,12 @@
 // version directive handled by shader class
 precision highp float;
 
+in vec2 uv;
+
+uniform sampler2D texture0;
+
 out vec4 FragColor;
 
 void main() {
-    FragColor = vec4(1.0, 1.0, 0.5, 1.0);
+    FragColor = texture(texture0, uv);
 }

@@ -27,6 +27,7 @@ public:
 
     void loadUniform(GLint location, glm::mat4 matrix) { glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix)); }
     void loadUniform(GLint location, float value) { glUniform1f(location, value); }
+    void loadUniform(GLint location, int value) { glUniform1i(location, value); }
     void loadUniform(GLint location, glm::vec2 value) { glUniform2fv(location, 1, glm::value_ptr(value)); }
     void loadUniform(GLint location, glm::vec3 value) { glUniform3fv(location, 1, glm::value_ptr(value)); }
 };

@@ -8,6 +8,7 @@
 #include <object.h>
 #include <shader.h>
 #include <window.h>
+#include <texture.h>
 
 // /nix/store/fif8p12nknb7cw8ffbxbsbrhr2gml3v4-emscripten-3.1.17/share/emscripten/cache/
 #ifdef __EMSCRIPTEN__
@@ -15,92 +16,124 @@
 #include <emscripten/html5.h>
 #endif
 
-float vertices[] = {-1.0f, -1.0f, 0.0f, 1.0f,  -1.0f, 0.0f,
-                    1.0f,  1.0f,  0.0f, -1.0f, 1.0f,  0.0f};
+float vertices[] = { -1.0f, -1.0f, 0.0f, 
+					  1.0f,  -1.0f, 0.0f,
+					  1.0f,  1.0f,  0.0f, 
+					  -1.0f, 1.0f,  0.0f };
 
-int indices[]{0, 1, 2, 0, 2, 3};
+float uvs[] = { 0.0f, 0.0f, 
+				1.0f, 0.0f,
+				1.0f, 1.0f,
+				0.0f, 1.0f };
+
+int indices[]{ 0, 1, 2, 0, 2, 3 };
 
 class Application {
 private:
-  std::shared_ptr<Mesh> quad;
-  std::shared_ptr<Object> obj;
-  std::shared_ptr<Shader> commonShader;
-  GLint modelMatId;
-  GLint viewMatId;
-  GLint projMatId;
+	std::shared_ptr<Mesh> quad;
+	std::shared_ptr<Object> obj;
+	std::shared_ptr<Shader> commonShader;
+	std::shared_ptr<Texture> commonTexture;
 
-  std::shared_ptr<PerspectiveCamera> camera;
-  double deltaTime;
-  double lastTime;
-  double timer;
+	GLint modelMatId;
+	GLint viewMatId;
+	GLint projMatId;
+	GLint sampler2DId;
+
+	std::shared_ptr<OrthoCamera> camera;
+	double deltaTime;
+	double lastTime;
+	
+	double camSpeed;
 
 public:
-  std::shared_ptr<Window> win;
-  
-  Application() {
-    win = std::make_shared<Window>("Game Engine - v 0.1", 600, 400);
-	Log::getGameLog()->trace("Surface created");
+	std::shared_ptr<Window> win;
 
-    quad = std::make_shared<Mesh>(sizeof(vertices), vertices, sizeof(indices), indices);
-	Log::getGameLog()->trace("Creating object");
-    obj = std::make_shared<Object>(glm::vec3(-0.5f, -0.5f, -1.0f), glm::vec3(1.0f), glm::vec3(0.0f));
+	Application() {
+		win = std::make_shared<Window>("Game Engine - v 0.1", 600, 400);
+		Log::getGameLog()->trace("Surface created");
 
-	Log::getGameLog()->info("Loading shaders");
-    commonShader = std::make_shared<Shader>("res/shaders/vertex.vert", "res/shaders/fragment.frag");
-    modelMatId = commonShader->getUniformLocation("modelMat");
-    viewMatId = commonShader->getUniformLocation("viewMat");
-    projMatId = commonShader->getUniformLocation("projMat");
-    commonShader->use();
+		glm::ivec2 winSize = win->getWindowSize();
+		Log::getGameLog()->trace("Creating a camera: win_size x={} y={}", winSize.x, winSize.y);
+		camera = std::make_shared<OrthoCamera>(win, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), winSize);
+		this->camSpeed = 45.0f;
 
-	Log::getGameLog()->trace("Creating a camera");
-    glm::ivec2 winSize = win->getWindowSize();
-    camera = std::make_shared<PerspectiveCamera>(win, glm::vec3(4.0f, 0.0f, 10.0f), glm::vec3(0.0f),
-           (float)winSize.x / (float)winSize.y, glm::radians(120.0f), 0.1f,
-           1000.0f);
+		quad = std::make_shared<Mesh>((GLuint) sizeof(vertices), vertices, (GLuint) sizeof(indices), indices, (GLuint) sizeof(uvs), uvs);
+		Log::getGameLog()->trace("Creating object");
+		obj = std::make_shared<Object>(glm::vec3(winSize.x / 2.0f, winSize.y / 2.0f, -1.0f), glm::vec3(100.0f), glm::vec3(0.0f));
 
-    glClearColor(0.1f, 0.7f, 0.7f, 1.0f);
+		Log::getGameLog()->info("Loading shaders");
+		commonShader = std::make_shared<Shader>("res/shaders/entity.vert", "res/shaders/fragment.frag");
+		modelMatId = commonShader->getUniformLocation("modelMat");
+		viewMatId = commonShader->getUniformLocation("viewMat");
+		projMatId = commonShader->getUniformLocation("projMat");
+		sampler2DId = commonShader->getUniformLocation("texture0");
+		commonShader->use();
 
-    deltaTime = 0.0f;
-    lastTime = glfwGetTime();
-	timer = 0;
+		Log::getGameLog()->trace("Loading textures");
+		commonTexture = std::make_shared<Texture>(std::string("res/textures/stone.png"));
 
-	Log::getGameLog()->trace("Initialization finished");
-  }
+		glClearColor(0.1f, 0.7f, 0.7f, 1.0f);
 
-  void update() {
-    // tick
-	{
-      double now = glfwGetTime();
-      deltaTime = now - lastTime;
-      lastTime = now;
-    }
-
-	timer += deltaTime;
-	if (timer > 1) {
-		Log::getGameLog()->info("Tick");
-		timer = 0;
+		deltaTime = 0.0f;
+		lastTime = glfwGetTime();
+		
+		Log::getGameLog()->trace("Initialization finished");
 	}
 
-	obj->tick();
+	void update() {
+		// tick
+		{
+			double now = glfwGetTime();
+			deltaTime = now - lastTime;
+			lastTime = now;
+		}
 
-    // render
-    glClear(GL_COLOR_BUFFER_BIT);
+		glm::vec3 camPos = this->camera->getPosition();
 
-    commonShader->use();
-    commonShader->loadUniform(modelMatId, obj->getModelMat());
-    commonShader->loadUniform(viewMatId, camera->getViewMat());
-    commonShader->loadUniform(projMatId, camera->getProjMat());
+		if (glfwGetKey(this->win->getHandle(), GLFW_KEY_A)) {
+			camPos.x -= deltaTime * this->camSpeed;
+			this->camera->setPosition(camPos);
+			Log::getGameLog()->info("Camera Pos: X: {} Y: {} Z: {}", camPos.x, camPos.y, camPos.z);
+		}
+		if (glfwGetKey(this->win->getHandle(), GLFW_KEY_D)) {
+			camPos.x += deltaTime * this->camSpeed;
+			this->camera->setPosition(camPos);
+			Log::getGameLog()->info("Camera Pos: X: {} Y: {} Z: {}", camPos.x, camPos.y, camPos.z);
+		}
+		if (glfwGetKey(this->win->getHandle(), GLFW_KEY_W)) {
+			camPos.y += deltaTime * this->camSpeed;
+			this->camera->setPosition(camPos);
+			Log::getGameLog()->info("Camera Pos: X: {} Y: {} Z: {}", camPos.x, camPos.y, camPos.z);
+		}
+		if (glfwGetKey(this->win->getHandle(), GLFW_KEY_S)) {
+			camPos.y -= deltaTime * this->camSpeed;
+			this->camera->setPosition(camPos);
+			Log::getGameLog()->info("Camera Pos: X: {} Y: {} Z: {}", camPos.x, camPos.y, camPos.z);
+		}
 
-    quad->bind();
-	
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	
-    quad->unbind();
+		obj->tick();
 
-    win->swap();
+		// render
+		glClear(GL_COLOR_BUFFER_BIT);
 
-    glfwPollEvents();
-  }
+		commonShader->use();
+		commonShader->loadUniform(modelMatId, obj->getModelMat());
+		commonShader->loadUniform(viewMatId, camera->getViewMat());
+		commonShader->loadUniform(projMatId, camera->getProjMat());
+		commonShader->loadUniform(sampler2DId, 0);
+		glActiveTexture(GL_TEXTURE0);
+		commonTexture->bind();
+		quad->bind();
+
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		quad->unbind();
+
+		win->swap();
+
+		glfwPollEvents();
+	}
 
 };
 
@@ -109,26 +142,27 @@ Application* app;
 void game_loop() {
 	app->update();
 }
-	  
+
 int main() {
-  try {
-    Log::init();
-    Log::getGameLog()->info("CWD: {}", std::filesystem::current_path().string());
-    Log::getGameLog()->info("Game startup...");
-    app = new Application();
+	try {
+		Log::init();
+		Log::getGameLog()->info("CWD: {}", std::filesystem::current_path().string());
+		Log::getGameLog()->info("Game startup...");
+		app = new Application();
 
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(game_loop, 0, false);
+		emscripten_set_main_loop(game_loop, 0, false);
 #else
-    while (!app.win->shouldClose()) {
-      app.update()
-    }
+		while (!app->win->shouldClose()) {
+			app->update();
+		}
 #endif
 
-        return 0;
-  } catch (std::exception &e) {
-    std::cout << "FATAL ERROR: " << e.what() << std::endl;
-  }
+		return 0;
+}
+	catch (std::exception& e) {
+		std::cout << "FATAL ERROR: " << e.what() << std::endl;
+	}
 
-  return 1;
+	return 1;
 }

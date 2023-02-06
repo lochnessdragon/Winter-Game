@@ -35,9 +35,9 @@ public:
     glm::vec3 getScale() { return scale; }
     glm::vec3 getRotation() { return rotation; }
 
-    void setPosition(glm::vec3 position) { this->position = position; setDirty(); }
-    void setScale(glm::vec3 scale) { this->scale = scale; setDirty(); }
-    void setRotation(glm::vec3 rotation) { this->rotation = rotation; setDirty(); }
+    void setPosition(glm::vec3 newPos) { this->position = newPos; setDirty(); }
+    void setScale(glm::vec3 newScale) { this->scale = newScale; setDirty(); }
+    void setRotation(glm::vec3 newRot) { this->rotation = newRot; setDirty(); }
 
     glm::mat4 getModelMat() { return modelMat; }
 };
