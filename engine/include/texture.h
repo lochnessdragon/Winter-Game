@@ -13,7 +13,7 @@ private:
 
 public:
 	Texture(int width, int height);
-	Texture(std::string& filename);
+	Texture(std::string filename);
 	~Texture() { glDeleteTextures(1, &this->handle); };
 
 	const glm::ivec2& getSize() { return this->size; };

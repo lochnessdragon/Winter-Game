@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 #include "platform.h"
 
 #ifndef PLATFORM_WEB
@@ -12,9 +13,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+struct ShaderVariable {
+    GLint location;
+    GLenum type;
+    GLint size;
+};
+
 class Shader {
 private:
     GLuint handle;
+    std::unordered_map<std::string, ShaderVariable> uniformVars;
+    std::unordered_map<std::string, ShaderVariable> attribs;
 
     GLuint compileShader(GLenum type, const char* source);
 public:
@@ -25,9 +34,9 @@ public:
     
     GLint getUniformLocation(const char* name) { return glGetUniformLocation(this->handle, name); }
 
-    void loadUniform(GLint location, glm::mat4 matrix) { glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix)); }
-    void loadUniform(GLint location, float value) { glUniform1f(location, value); }
-    void loadUniform(GLint location, int value) { glUniform1i(location, value); }
-    void loadUniform(GLint location, glm::vec2 value) { glUniform2fv(location, 1, glm::value_ptr(value)); }
-    void loadUniform(GLint location, glm::vec3 value) { glUniform3fv(location, 1, glm::value_ptr(value)); }
+    void loadUniform(const std::string& name, glm::mat4 matrix);
+    void loadUniform(const std::string& name, int value); // { glUniform1i(location, value); }
+    void loadUniform(const std::string& name, float value); // { glUniform1f(location, value); }
+    void loadUniform(const std::string& name, glm::vec2 value); // { glUniform2fv(location, 1, glm::value_ptr(value)); }
+    void loadUniform(const std::string& name, glm::vec3 value); // { glUniform3fv(location, 1, glm::value_ptr(value)); }
 };

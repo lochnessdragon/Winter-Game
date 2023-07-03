@@ -40,7 +40,7 @@ private:
     EventDispatcher<WindowResizeEventData> windowResizeEvent;
     EventDispatcher<KeyEventData> keyPressedEvent;
 public:
-    Window(const std::string& title, int width, int height);
+    Window(const std::string title, int width, int height);
     ~Window();
 
     bool shouldClose();

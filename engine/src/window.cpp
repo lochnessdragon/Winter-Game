@@ -22,7 +22,7 @@ void Window::glfwKeyCallback(GLFWwindow* window, int key, int scancode, int acti
     windowWrapper->keyPressedEvent.dispatch({key, scancode, action, mods});
 }
 
-Window::Window(const std::string& title, int width, int height) {
+Window::Window(const std::string title, int width, int height) {
     glfwSetErrorCallback(Window::glfwErrorCallback);
 
     if(!glfwInit()) {

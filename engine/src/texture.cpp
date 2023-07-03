@@ -6,7 +6,7 @@
 #include <log.h>
 #include <stdexcept>
 
-Texture::Texture(std::string& filename) {
+Texture::Texture(std::string filename) {
 	stbi_set_flip_vertically_on_load(true);
 
 	int width;

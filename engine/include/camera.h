@@ -42,7 +42,7 @@ public:
 class PerspectiveCamera : public Camera {
 private:
     float aspect;
-    float fov;
+    float fov; // in radians (don't forget glm::radians)
     float near;
     float far;
 public:

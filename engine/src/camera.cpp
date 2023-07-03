@@ -45,35 +45,12 @@ void OrthoCamera::calculateProjMat() {
     //Log::getRendererLog()->trace("Projection Mat: {}\n Fb: {}", glm::to_string(projMat), glm::to_string(this->fbSize));
 }
 
-PerspectiveCamera::PerspectiveCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, float aspect, float fov, float near, float far) : aspect(aspect), fov(fov), near(near), far(far), Camera(window, position, rotation) {
+PerspectiveCamera::PerspectiveCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, float aspect, float fov, float near, float far) : Camera(window, position, rotation), aspect(aspect), fov(fov), near(near), far(far) {
     this->calculateProjMat();
     
     window->getWindowResizeHandler().addListener([=](const WindowResizeEventData& event) -> void {
         this->aspect = (float)event.width / (float)event.height;
         calculateProjMat();
-    });
-
-    window->getKeyPressedHandler().addListener([=](const KeyEventData& data) -> void {
-        switch (data.key) {
-        case GLFW_KEY_W:
-            this->position.z -= 0.25f;
-            this->calculateViewMat();
-            break;
-        case GLFW_KEY_A:
-            this->position.x -= 0.25f;
-            this->calculateViewMat();
-            break;
-        case GLFW_KEY_S:
-            this->position.z += 0.25f;
-            this->calculateViewMat();
-            break;
-        case GLFW_KEY_D:
-            this->position.x += 0.25f;
-            this->calculateViewMat();
-            break;
-        default:
-            break;
-        }
     });
 }
 

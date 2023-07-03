@@ -12,3 +12,6 @@ engine/lib/*
 
 # build files
 build/
+
+# renderdoc
+*.cap
