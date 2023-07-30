@@ -30,7 +30,7 @@ private:
 
     static int getDataSize(GLenum dataType);
 public:
-    Mesh(const GLuint indices_length, const int* indices, const GLuint vertices_length, const float* vertices, const GLuint uvs_length, const float* uvs);
+    Mesh(const GLuint indices_length, const unsigned int* indices, const GLuint vertices_length, const float* vertices, const GLuint uvs_length, const float* uvs);
     ~Mesh();
 
     GLuint attachBuffer(GLenum dataType, int memberCount, GLuint dataLength, void* data);

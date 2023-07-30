@@ -1,0 +1,17 @@
+kloofendal_misty_morning_puresky_4k.hdr:
+ - licensed under CC0 by Greg Zaal on PolyHaven
+
+kloppenheim_01_puresky_4k.hdr:
+ - licensed under CC0 by Greg Zaal and modified by Jarod Guest on PolyHaven
+
+misty_farm_road_4k.hdr:
+ - licensed under CC0 by Alexander Scholten on PolyHaven
+
+kloppenheim_02_puresky_4k.hdr:
+ - licensed under CC0 by Greg Zaal and modified by Jarod Guest on PolyHaven
+
+farm_field_puresky_4k.hdr:
+ - licensed under CC0 by Dimitrios Savva and modified by Jarod Guest on PolyHaven
+
+mud_road_puresky_4k.hdr:
+ - licensed under CC0 by Sergey Rudavin and modified by Jarod Guest on PolyHaven

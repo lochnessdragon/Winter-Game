@@ -23,11 +23,12 @@ protected:
     void calculateModelMat();
 
 public:
+    Object();
     Object(glm::vec3 position, glm::vec3 scale, glm::vec3 rotation);//, std::shared_ptr<Mesh> mesh);
     ~Object();
 
     // this method should really be called at the end of a tick, not the beginning
-    void tick() { if(dirty) { calculateModelMat(); dirty = false; } }
+    // void tick() { if(dirty) { calculateModelMat(); dirty = false; } }
 
     void setDirty() { dirty = true; }
 
@@ -39,5 +40,5 @@ public:
     void setScale(glm::vec3 newScale) { this->scale = newScale; setDirty(); }
     void setRotation(glm::vec3 newRot) { this->rotation = newRot; setDirty(); }
 
-    glm::mat4 getModelMat() { return modelMat; }
+    glm::mat4 getModelMat() { if(dirty) { calculateModelMat(); dirty = false; } return modelMat; }
 };

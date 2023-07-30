@@ -15,7 +15,7 @@ Texture::Texture(std::string filename) {
 	unsigned char* imageData = stbi_load(filename.c_str(), &width, &height, &channelCount, 0);
 	if (imageData == NULL) {
 		Log::getRendererLog()->error("Failed to load image: {} Error: {}", filename, stbi_failure_reason());
-		throw std::exception("Failed to load image!");
+		throw std::runtime_error("Failed to load image!");
 	}
 
 	this->size = glm::ivec2(width, height);
@@ -40,7 +40,7 @@ Texture::Texture(std::string filename) {
 		break;
 	default:
 		Log::getRendererLog()->error("Failed to detect the format of texture: {}", filename);
-		throw std::exception("Failed to detect texture format");
+		throw std::runtime_error("Failed to detect texture format");
 	}
 
 	glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, width, height, 0, textureFormat, GL_UNSIGNED_BYTE, imageData);
@@ -48,6 +48,18 @@ Texture::Texture(std::string filename) {
 	stbi_image_free(imageData);
 }
 
-Texture::Texture(int width, int height) {
-	throw std::exception("Texture::Texture(width, height) is unimplemented");
+Texture::Texture(int width, int height, GLenum format, unsigned char* data) {
+    this->size = glm::ivec2(width, height);
+    
+    // create a new texture slot
+    glGenTextures(1, &this->handle);
+    this->bind();
+    
+    // wrapping
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // shrinking linear or nearest
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // expanding
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 }

@@ -15,3 +15,6 @@ build/
 
 # renderdoc
 *.cap
+
+# Mac OS
+.DS_Store

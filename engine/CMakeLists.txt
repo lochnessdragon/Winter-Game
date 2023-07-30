@@ -88,6 +88,9 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
 	target_include_directories(Engine PUBLIC "lib/glad/include")
 endif()
 
+# include par_shapes
+target_include_directories(Engine PRIVATE "lib/par_shapes")
+
 # setup includes
 target_include_directories(Engine PUBLIC "include/")
 

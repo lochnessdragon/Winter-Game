@@ -10,17 +10,20 @@ int Mesh::getDataSize(GLenum type) {
     }
 }
 
-Mesh::Mesh(const GLuint indices_length, const int* indices, const GLuint vertices_length, const float* vertices, const GLuint uvs_length, const float* uvs) {
+Mesh::Mesh(const GLuint indices_length, const unsigned int* indices, const GLuint vertices_length, const float* vertices, const GLuint uvs_length, const float* uvs) {
 	glGenVertexArrays(1, &this->handle);
     this->bind();
 
     // vertices
     this->attachBuffer(GL_FLOAT, 3, vertices_length, (void*) vertices);
     vertexCount = vertices_length / (3 * sizeof(float));
-    Log::getRendererLog()->info("Vertex Count: {} Array Size: {}", vertexCount, vertices_length);
+    //Log::getRendererLog()->trace("Vertex Count: {} Array Size: {}", vertexCount, vertices_length);
 
     // uvs
     this->attachBuffer(GL_FLOAT, 2, uvs_length, (void*) uvs);
+    
+    // normals
+    // this->attachBuffer(GL_FLOAT, 3, normals_length, (void*) normals);
 
     //// vertices
     //glBindBuffer(GL_ARRAY_BUFFER, vbos[1]);

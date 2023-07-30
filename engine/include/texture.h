@@ -12,7 +12,7 @@ private:
 	glm::ivec2 size;
 
 public:
-	Texture(int width, int height);
+	Texture(int width, int height, GLenum format, unsigned char* data);
 	Texture(std::string filename);
 	~Texture() { glDeleteTextures(1, &this->handle); };
 

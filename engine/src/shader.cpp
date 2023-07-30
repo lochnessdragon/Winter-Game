@@ -149,8 +149,8 @@ Shader::Shader(const std::string& vertFile, const std::string& fragFile) : unifo
 	fragSrc.insert(0, "#version 330 core\n");
 #endif
 
-	Log::getRendererLog()->info("Transformed vertex shader: {}", vertSrc);
-	Log::getRendererLog()->info("Transformed fragment shader: {}", fragSrc);
+	Log::getRendererLog()->trace("Transformed vertex shader.");
+	Log::getRendererLog()->trace("Transformed fragment shader.");
 
 	GLuint vertObj = compileShader(GL_VERTEX_SHADER, vertSrc.c_str());
 	GLuint fragObj = compileShader(GL_FRAGMENT_SHADER, fragSrc.c_str());
@@ -190,7 +190,7 @@ Shader::Shader(const std::string& vertFile, const std::string& fragFile) : unifo
 	GLint longestUniformLength = 0;
 	glGetProgramiv(this->handle, GL_ACTIVE_UNIFORM_MAX_LENGTH, &longestUniformLength);
 
-	Log::getRendererLog()->info("Shader has {} active uniforms named:", uniformCount);
+	Log::getRendererLog()->trace("Shader has {} active uniforms named:", uniformCount);
 	for (GLint i = 0; i < uniformCount; i++) {
 		GLchar* uniformName = new GLchar[longestUniformLength]{ };
 		GLsizei uniformNameLength = 0;
@@ -199,7 +199,7 @@ Shader::Shader(const std::string& vertFile, const std::string& fragFile) : unifo
 		glGetActiveUniform(this->handle, (GLuint)i, longestUniformLength, &uniformNameLength, &uniformSize, &uniformType, uniformName);
 		GLint uniformLocation = getUniformLocation(uniformName);
 
-		Log::getRendererLog()->info("[{}] \"{}\": {} x {}, loc={}", i, uniformName, translateGLEnum(uniformType), uniformSize, uniformLocation);
+		Log::getRendererLog()->trace("[{}] \"{}\": {} x {}, loc={}", i, uniformName, translateGLEnum(uniformType), uniformSize, uniformLocation);
 
 		this->uniformVars.emplace(std::make_pair(std::string(uniformName), ShaderVariable{ uniformLocation, uniformType, uniformSize }));
 	}
@@ -211,7 +211,7 @@ Shader::Shader(const std::string& vertFile, const std::string& fragFile) : unifo
 	GLint longestAttribLength = 0;
 	glGetProgramiv(this->handle, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &longestAttribLength);
 
-	Log::getRendererLog()->info("Shader has {} active attribs:", attribCount);
+	Log::getRendererLog()->trace("Shader has {} active attribs:", attribCount);
 	for (GLint i = 0; i < attribCount; i++) {
 		GLchar* attribName = new GLchar[longestAttribLength]{ };
 		GLsizei attribNameLength = 0;
@@ -220,7 +220,7 @@ Shader::Shader(const std::string& vertFile, const std::string& fragFile) : unifo
 		glGetActiveAttrib(this->handle, (GLuint)i, longestAttribLength, &attribNameLength, &attribSize, &attribType, attribName);
 		GLint attribLocation = glGetAttribLocation(this->handle, attribName);
 
-		Log::getRendererLog()->info("[{}] \"{}\": {} x {}, loc={}", i, attribName, translateGLEnum(attribType), attribSize, attribLocation);
+		Log::getRendererLog()->trace("[{}] \"{}\": {} x {}, loc={}", i, attribName, translateGLEnum(attribType), attribSize, attribLocation);
 
 		this->attribs.emplace(std::make_pair(std::string(attribName), ShaderVariable{ attribLocation, attribType, attribSize }));
 	}
@@ -270,6 +270,16 @@ GLuint Shader::compileShader(GLenum type, const char* source) {
 	return shader;
 }
 
+void Shader::loadUniform(const std::string& name, glm::mat3 matrix) {
+	ShaderVariable uniform = this->uniformVars.at(name);
+	
+	if (uniform.type != GL_FLOAT_MAT3 || uniform.size != 1) {
+		throw std::invalid_argument("Error: " + name + " is not a mat4 variable that exists on this shader.");
+	}
+	
+	glUniformMatrix3fv(uniform.location, 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
 void Shader::loadUniform(const std::string& name, glm::mat4 matrix) {
 	ShaderVariable uniform = this->uniformVars.at(name);
 
@@ -278,7 +288,6 @@ void Shader::loadUniform(const std::string& name, glm::mat4 matrix) {
 	}
 
 	glUniformMatrix4fv(uniform.location, 1, GL_FALSE, glm::value_ptr(matrix));
-
 }
 
 void Shader::loadUniform(const std::string& name, int value) {
@@ -314,8 +323,8 @@ void Shader::loadUniform(const std::string& name, glm::vec2 value) {
 void Shader::loadUniform(const std::string& name, glm::vec3 value) {
 	ShaderVariable uniform = this->uniformVars.at(name);
 
-	if (uniform.type != GL_FLOAT_VEC2 || uniform.size != 1) {
-		throw std::invalid_argument("Error: " + name + " is not an vec2 variable that exists on this shader.");
+	if (uniform.type != GL_FLOAT_VEC3 || uniform.size != 1) {
+		throw std::invalid_argument("Error: " + name + " is not an vec3 variable that exists on this shader.");
 	}
 
 	glUniform3fv(uniform.location, 1, glm::value_ptr(value));

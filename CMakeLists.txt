@@ -19,7 +19,7 @@ endif()
 
 add_subdirectory(engine/)
 
-file(GLOB_RECURSE SOURCES "src/*.cpp")
+file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 
 add_executable(Minecraft ${SOURCES})
 target_link_libraries(Minecraft Engine)
@@ -49,4 +49,8 @@ if( MSVC )
     set_property(GLOBAL PROPERTY VS_STARTUP_PROJECT "Minecraft")
     set_property(TARGET Minecraft PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     message("Setting VS Working Dir to: ${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
+
+if( APPLE )
+    set_target_properties(Minecraft PROPERTIES XCODE_GENERATE_SCHEME TRUE XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()

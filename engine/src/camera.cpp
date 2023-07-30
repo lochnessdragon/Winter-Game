@@ -8,8 +8,9 @@
 
 // todo: tie camera to window so that the camera will update its aspect ratio with the window.
 Camera::Camera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation) {
-    this->position = position;
-    this->rotation = rotation;
+	this->m_position = position;
+    this->m_eulerRotation = rotation;
+	this->rotation = glm::quat(rotation);
 
     calculateViewMat();
 }
@@ -20,14 +21,23 @@ Camera::~Camera() {
 
 void Camera::calculateViewMat() {
     this->viewMat = glm::identity<glm::mat4>();
+	
+	glm::quat rotWorldY = glm::angleAxis(this->m_eulerRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::quat rotWorldX = glm::angleAxis(this->m_eulerRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::quat rotWorldZ = glm::angleAxis(this->m_eulerRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));;
 
-    // glm::rotate(this->viewMat, glm::radians(this->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    // glm::rotate(this->viewMat, glm::radians(this->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    // glm::rotate(this->viewMat, glm::radians(this->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	this->rotation = rotWorldX * rotWorldY * rotWorldZ; // glm::quat(this->m_eulerRotation);
+	viewMat *= glm::toMat4(rotation);
+	
+    this->viewMat = glm::translate(this->viewMat, -this->m_position);
+}
 
-    this->viewMat = glm::translate(this->viewMat, -this->position);
-
-    //std::cout << glm::to_string(this->position) << std::endl;
+glm::mat4 Camera::getViewMat() {
+	if(dirty) {
+		calculateViewMat();
+		dirty = false;
+	}
+	return viewMat;
 }
 
 OrthoCamera::OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, glm::ivec2 size) : Camera(window, position, rotation), fbSize(size) {

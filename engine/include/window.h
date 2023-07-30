@@ -36,9 +36,11 @@ private:
     static void glfwErrorCallback(int e, const char *d);
     static void glfwResizeCallback(GLFWwindow* window, int width, int height);
     static void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
+	static void glfwMouseMoveCallback(GLFWwindow* window, double xpos, double ypos);
+	
     EventDispatcher<WindowResizeEventData> windowResizeEvent;
-    EventDispatcher<KeyEventData> keyPressedEvent;
+    EventDispatcher<KeyEventData> keyEvent;
+	EventDispatcher<glm::vec2> mouseMoveEvent;
 public:
     Window(const std::string title, int width, int height);
     ~Window();
@@ -50,5 +52,6 @@ public:
     GLFWwindow* getHandle() { return handle; };
 
     auto& getWindowResizeHandler() { return windowResizeEvent; };
-    auto& getKeyPressedHandler() { return keyPressedEvent; };
+    auto& getKeyEventHandler() { return keyEvent; };
+	auto& getMouseMoveEventHandler() { return mouseMoveEvent; };
 };

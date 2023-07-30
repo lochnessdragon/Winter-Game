@@ -34,6 +34,7 @@ public:
     
     GLint getUniformLocation(const char* name) { return glGetUniformLocation(this->handle, name); }
 
+    void loadUniform(const std::string& name, glm::mat3 matrix);
     void loadUniform(const std::string& name, glm::mat4 matrix);
     void loadUniform(const std::string& name, int value); // { glUniform1i(location, value); }
     void loadUniform(const std::string& name, float value); // { glUniform1f(location, value); }

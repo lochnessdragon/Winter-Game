@@ -19,7 +19,12 @@ void Window::glfwResizeCallback(GLFWwindow* window, int width, int height) {
 
 void Window::glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     Window* windowWrapper = (Window*)glfwGetWindowUserPointer(window);
-    windowWrapper->keyPressedEvent.dispatch({key, scancode, action, mods});
+    windowWrapper->keyEvent.dispatch({key, scancode, action, mods});
+}
+
+void Window::glfwMouseMoveCallback(GLFWwindow* window, double xpos, double ypos) {
+	Window* windowWrapper = (Window*) glfwGetWindowUserPointer(window);
+	windowWrapper->mouseMoveEvent.dispatch(glm::vec2(xpos, ypos));
 }
 
 Window::Window(const std::string title, int width, int height) {
@@ -34,6 +39,9 @@ Window::Window(const std::string title, int width, int height) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+#ifdef PLATFORM_MAC
+    glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
 
     this->handle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
 
@@ -44,6 +52,7 @@ Window::Window(const std::string title, int width, int height) {
 
     glfwSetFramebufferSizeCallback(this->handle, Window::glfwResizeCallback);
     glfwSetKeyCallback(this->handle, Window::glfwKeyCallback);
+	glfwSetCursorPosCallback(this->handle, Window::glfwMouseMoveCallback);
 
     glfwSetWindowUserPointer(this->handle, this);
 

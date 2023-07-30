@@ -1,6 +1,8 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "window.h"
 #include <memory>
@@ -10,9 +12,11 @@ protected:
     glm::mat4 viewMat;
     glm::mat4 projMat;
 
-    glm::vec3 position;
-    glm::vec3 rotation;
-
+    glm::vec3 m_position;
+	glm::quat rotation;
+    glm::vec3 m_eulerRotation;
+	
+	bool dirty;
 public:
     Camera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation);
     ~Camera();
@@ -20,12 +24,16 @@ public:
     virtual void calculateViewMat();
     virtual void calculateProjMat() = 0;
 
-    void setPosition(glm::vec3 newPos) { position = newPos; calculateViewMat(); }
+    glm::vec3& position() { return m_position; }
+	const glm::vec3& position() const { return m_position; }
+    glm::vec3& eulerRotation() { return m_eulerRotation; }
+	const glm::vec3& eulerRotation() const { return m_eulerRotation; }
+	glm::quat getQuatRotation() { return rotation; }
+	
+	// MUST be called after modifying the position or eulerRot.
+	void setDirty() { dirty = true; }
 
-    glm::vec3 getPosition() { return position; }
-    glm::vec3 getRotation() { return rotation; }
-
-    glm::mat4 getViewMat() { return viewMat; }
+	glm::mat4 getViewMat();
     glm::mat4 getProjMat() { return projMat; }
 };
 
