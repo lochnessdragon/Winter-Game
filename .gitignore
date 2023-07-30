@@ -4,6 +4,7 @@
 CMakeUserPresets.json
 .ccls-cache/
 user_build.bat
+user_build.sh
 .emscripten_cache/
 
 # libraries
