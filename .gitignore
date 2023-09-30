@@ -10,6 +10,7 @@ user_build.sh
 # libraries
 engine/lib/*
 !/engine/lib/glad
+!/engine/lib/par_shapes
 
 # build files
 build/
