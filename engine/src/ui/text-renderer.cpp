@@ -1,4 +1,4 @@
-#include "text-renderer.h"
+#include "ui/text-renderer.h"
 
 #include "log.h"
 

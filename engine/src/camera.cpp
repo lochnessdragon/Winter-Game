@@ -40,7 +40,7 @@ glm::mat4 Camera::getViewMat() {
 	return viewMat;
 }
 
-OrthoCamera::OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, glm::ivec2 size) : Camera(window, position, rotation), fbSize(size) {
+OrthoCamera::OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation) : Camera(window, position, rotation), fbSize(window->getWindowSize()) {
     this->calculateProjMat();
 
     window->getWindowResizeHandler().addListener([=](const WindowResizeEventData& event) -> void {

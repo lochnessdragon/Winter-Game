@@ -48,7 +48,7 @@ class OrthoCamera : public Camera {
 private:
     glm::ivec2 fbSize;
 public:
-    OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, glm::ivec2 size);
+    OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation);
     ~OrthoCamera();
 
     void calculateProjMat();

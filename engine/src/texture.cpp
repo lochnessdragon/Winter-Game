@@ -1,7 +1,13 @@
 #include <texture.h> 
 
+#ifdef _MSC_VER
+#pragma warning(disable: 4244) // Ignore C4244 coming from STB lib
+#endif
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#ifdef _MSC_VER
+#pragma warning(default: 4244) // Reverse ignore
+#endif
 
 #include <log.h>
 #include <stdexcept>

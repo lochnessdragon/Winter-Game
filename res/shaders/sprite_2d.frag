@@ -4,9 +4,10 @@ precision highp float;
 uniform sampler2D spriteTex;
 
 in vec2 uv;
+in vec4 color;
 
 out vec4 FragColor;
 
 void main() {
-	FragColor = texture(spriteTex, uv);
+	FragColor = color * texture(spriteTex, uv);
 }

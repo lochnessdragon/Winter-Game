@@ -53,7 +53,7 @@ Texture Font::generateAtlas(const std::string& filename) {
             generator.setAttributes(attributes);
             generator.setThreadCount(4); // have to look at multithreading (MT)
             // Generate atlas bitmap
-            generator.generate(glyphs.data(), glyphs.size());
+            generator.generate(glyphs.data(), (int) glyphs.size());
             // The atlas bitmap can now be retrieved via atlasStorage as a BitmapConstRef.
             // The glyphs array (or fontGeometry) contains positioning data for typesetting text.
             msdfgen::BitmapConstRef<msdf_atlas::byte, 3> bitmap = (msdfgen::BitmapConstRef<msdf_atlas::byte, 3>) generator.atlasStorage();

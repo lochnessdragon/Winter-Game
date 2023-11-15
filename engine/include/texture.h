@@ -31,6 +31,8 @@ public:
 	const glm::ivec2& getSize() { return this->size; };
 	void bind() { glBindTexture(GL_TEXTURE_2D, this->handle); };
 
+	bool isTexture() { return glIsTexture(handle); };
+
 protected:
 	friend bool operator<(const Texture& lhs, const Texture& rhs);
 	friend bool operator==(const Texture& lhs, const Texture& rhs);
