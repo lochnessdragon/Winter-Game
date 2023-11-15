@@ -13,6 +13,7 @@
 #include <renderer.h>
 #include <mesh_generator.h>
 #include <input.h>
+#include <ui/text-renderer.h>
 
 // project files
 #include "camera_controller.h"
@@ -22,6 +23,16 @@
 #include <emscripten.h>
 #include <emscripten/html5.h>
 #endif
+
+/*
+* Features to implements before Github Game Off 2023
+* 1. 2D rendering
+* 2. Text rendering
+* 3. Scene system
+* 4. Audio system
+* 5. ImGUI
+* 6. ECS
+*/
 
 class Application {
 private:
@@ -34,6 +45,8 @@ private:
 	CameraController cameraController;
 
 	std::shared_ptr<Renderer> renderer;
+	std::shared_ptr<TextRenderer> textRenderer;
+	std::shared_ptr<Font> font;
     
     AmbientLight ambientLight;
     Light basicLight;
@@ -45,13 +58,13 @@ public:
 	std::shared_ptr<Window> win;
 
 	Application() {
-		win = std::make_shared<Window>("Horo geam", 600, 400);
+		win = std::make_shared<Window>("Horo geam", 1200, 800);
 		Log::getGameLog()->trace("Surface created");
         win->getKeyEventHandler().addListener([this](auto keyData){
             if(keyData.key == GLFW_KEY_Z && keyData.action == GLFW_RELEASE) {
                 this->renderer->toggleWireframe();
-			} else if (keyData.key == GLFW_KEY_ESCAPE && keyData.action == GLFW_RELEASE) {
-				Input::resetCursor();
+			} else if (keyData.key == GLFW_KEY_ESCAPE && keyData.action == GLFW_PRESS) {
+				win->setShouldClose();
 			}
         });
 		
@@ -60,6 +73,10 @@ public:
 		Input::disableCursor();
 
 		renderer = std::make_shared<Renderer>();
+		textRenderer = std::make_shared<TextRenderer>(win);
+
+		// create a font
+		font = std::make_shared<Font>("res/fonts/OpenSans-VariableFont_wdth,wght.ttf");
 
 		glm::ivec2 winSize = win->getWindowSize();
 		Log::getGameLog()->trace("Creating a camera: win_size x={} y={}", winSize.x, winSize.y);
@@ -76,7 +93,10 @@ public:
 
 		Log::getGameLog()->trace("Loading textures");
         unsigned char whiteTex[] = { 255, 255, 255, 255};
-		commonTexture = std::make_shared<Texture>(1, 1, GL_RGBA, whiteTex);
+		TextureSpecification spec;
+		spec.width = 1;
+		spec.height = 1;
+		commonTexture = std::make_shared<Texture>(spec, whiteTex);
         
         ambientLight = { glm::vec3(0.1f, 0.7f, 0.7f), 0.2f };
         basicLight = { glm::vec3(12.0f, 12.0f, 15.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.75f };
@@ -99,14 +119,11 @@ public:
 
 		cameraController.update(deltaTime);
 
-//        glm::vec3 objRot = obj->getRotation();
-//        objRot.x += 5.0f * (float) deltaTime;
-//        objRot.y += 5.0f * (float) deltaTime;
-//        obj->setRotation(objRot);
-
 		// render
 		renderer->clear();
 		renderer->render(camera, obj, mesh, commonShader, commonTexture, ambientLight, basicLight);
+		textRenderer->render("Some debug text", font, { 10.0, 72.0 }, 72, { 1.0f, 1.0f, 1.0f, 1.0f });
+		textRenderer->endFrame();
 		win->swap();
 
 		Input::update();

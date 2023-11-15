@@ -14,7 +14,7 @@ public:
 	CameraController();
     CameraController(std::shared_ptr<Camera> cam);
     
-    void update(float deltaTime);
+    void update(double deltaTime);
     
     std::shared_ptr<Camera> getCamera() { return camera; }
     const std::shared_ptr<Camera> getCamera() const { return camera; }

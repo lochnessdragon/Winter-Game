@@ -8,7 +8,7 @@ CameraController::CameraController() : moveSpeed(5.0f), rotSpeed(1.5f), prevMous
 
 CameraController::CameraController(std::shared_ptr<Camera> cam) : camera(cam), moveSpeed(5.0f), rotSpeed(1.5f), prevMousePos(0.0f) {}
 
-void CameraController::update(float dTime) {
+void CameraController::update(double dTime) {
 	glm::vec3& position = this->camera->position();
 	glm::vec3& rotation = this->camera->eulerRotation();
 	// forward with orientation 0 should be in the x direction,
@@ -44,8 +44,8 @@ void CameraController::update(float dTime) {
 	glm::vec2 mousePos = Input::getMousePos();
 	glm::vec2 dMouse = mousePos - prevMousePos;
 	if(dMouse.x != 0 || dMouse.y != 0) {
-		rotation.y += dMouse.x * dTime * rotSpeed;
-		rotation.x += dMouse.y * dTime * rotSpeed;
+		rotation.y += dMouse.x * (float) dTime * rotSpeed;
+		rotation.x += dMouse.y * (float) dTime * rotSpeed;
 		rotation.x = std::clamp(rotation.x, glm::radians(-90.0f), glm::radians(90.0f));
 		camera->setDirty();
 	}

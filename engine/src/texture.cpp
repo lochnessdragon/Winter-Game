@@ -48,8 +48,12 @@ Texture::Texture(std::string filename) {
 	stbi_image_free(imageData);
 }
 
-Texture::Texture(int width, int height, GLenum format, unsigned char* data) {
-    this->size = glm::ivec2(width, height);
+Texture::Texture(TextureSpecification spec, const unsigned char* data) {
+    this->size = glm::ivec2(spec.width, spec.height);
+
+	GLenum scalingType = GL_LINEAR;
+	if (spec.scaling == TextureScaling::Nearest)
+		scalingType = GL_NEAREST;
     
     // create a new texture slot
     glGenTextures(1, &this->handle);
@@ -59,7 +63,15 @@ Texture::Texture(int width, int height, GLenum format, unsigned char* data) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // shrinking linear or nearest
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // expanding
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, scalingType); // expanding
     
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, spec.format, spec.width, spec.height, 0, spec.format, GL_UNSIGNED_BYTE, data);
+}
+
+bool operator<(const Texture& lhs, const Texture& rhs) {
+	return lhs.handle < rhs.handle;
+}
+
+bool operator==(const Texture& lhs, const Texture& rhs) {
+	return lhs.handle == rhs.handle;
 }

@@ -11,13 +11,16 @@
 #include <GLES3/gl3.h>
 #endif
 
-#define VBO_COUNT 3
-
 struct VertexBufferLayout {
     GLenum dataType;
     int memberCount;
     GLuint dataLength;
     void* data;
+};
+
+enum class MeshUsage {
+    Static,
+    Dynamic
 };
 
 class Mesh {
@@ -28,12 +31,15 @@ private:
     GLuint vertexCount;
     GLuint indexCount;
 
+    GLenum usage;
+
     static int getDataSize(GLenum dataType);
 public:
-    Mesh(const GLuint indices_length, const unsigned int* indices, const GLuint vertices_length, const float* vertices, const GLuint uvs_length, const float* uvs);
+    Mesh(const GLuint indices_length, const unsigned int* indices, const GLuint vertices_length, const float* vertices, const GLuint uvs_length, const float* uvs, MeshUsage usage = MeshUsage::Static);
     ~Mesh();
 
     GLuint attachBuffer(GLenum dataType, int memberCount, GLuint dataLength, void* data);
+    void setBuffer(uint32_t bufferIdx, const GLuint bufferSize, const void* data);
 
     GLuint handle;
     void bind();

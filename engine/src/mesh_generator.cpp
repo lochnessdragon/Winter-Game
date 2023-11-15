@@ -11,10 +11,10 @@
 #define PAR_SHAPES_IMPLEMENTATION
 #include <par_shapes.h>
 
-float quadVertices[] = { -1.0f, -1.0f, 0.0f,
-					  1.0f,  -1.0f, 0.0f,
-					  1.0f,  1.0f,  0.0f,
-					  -1.0f, 1.0f,  0.0f };
+float quadVertices[] = { -1.0f, -1.0f,
+					  1.0f,  -1.0f,
+					  1.0f,  1.0f,
+					  -1.0f, 1.0f };
 
 float quadUvs[] = { 0.0f, 0.0f,
 				1.0f, 0.0f,
@@ -179,7 +179,7 @@ std::shared_ptr<Mesh> loadObj(const std::string& filename) {
 			} else if (line.rfind("vn", 0) == 0) {
 				// normal
 				line.erase(0, line.find(" ") + 1);
-				Log::getRendererLog()->trace("Reading normal with info: {}", line);
+				//Log::getRendererLog()->trace("Reading normal with info: {}", line);
 				for (int i = 0; i < 3; i++) {
 					// extract the 3 normal components
 					size_t nextSpace = line.find(" ");
@@ -202,12 +202,12 @@ std::shared_ptr<Mesh> loadObj(const std::string& filename) {
                 // faces
                 // we will assume for now that faces do not contain slashes
                 line.erase(0, line.find(" ") + 1);
-                Log::getRendererLog()->trace("Reading face with info: \"{}\"", line);
+                //Log::getRendererLog()->trace("Reading face with info: \"{}\"", line);
                 for (int i = 0; i < 3; i++) {
                     // extract the first three set of indices from the line
                     size_t nextSpace = line.find(" ");
                     std::string vertexInfo = line.substr(0, nextSpace);
-					Log::getRendererLog()->trace("Extracted vertex: \"{}\"", vertexInfo);
+					//Log::getRendererLog()->trace("Extracted vertex: \"{}\"", vertexInfo);
 					if(vertexInfoToIndex.count(vertexInfo) == 1) {
 						// the data for this vertex has already been placed correctly, we can just add a new index to the indices buffer
 						indices.push_back(vertexInfoToIndex[vertexInfo]);
@@ -229,7 +229,7 @@ std::shared_ptr<Mesh> loadObj(const std::string& filename) {
 						// the next part of the string should only contain the normal index
 						unsigned int normalIdx = (unsigned int) (std::stoi(vertexInfo) - 1);
 						
-						Log::getRendererLog()->trace("Found vertex_idx={}, uv_idx={}, normal_idx={} for face.", vertexIdx, uvIdx, normalIdx);
+						//Log::getRendererLog()->trace("Found vertex_idx={}, uv_idx={}, normal_idx={} for face.", vertexIdx, uvIdx, normalIdx);
 						
 						for (unsigned int i = 0; i < 3; i++) {
 							vertices.push_back(temp_vertices[(vertexIdx * 3) + i]);

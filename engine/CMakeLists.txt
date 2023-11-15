@@ -43,13 +43,14 @@ function(AddDep targetName depName pkgName libName headerOnly gitUrl gitTag)
 		if( NOT headerOnly )
 		  add_subdirectory(${${depName}_DIR} lib/${depName})
 		  target_link_libraries(${targetName} PUBLIC ${libName})
+          message(STATUS "Added ${depName} as a subdirectory and linked ${libName}")
 		else()
 		  target_include_directories(${targetName} PUBLIC "${${depName}_DIR}/")
 		endif()
       endif()
     endif()
   else()
-    message(STATUS "Found package: ${depName}")
+    message(STATUS "Located depedency (using find_package): ${depName}")
     # alright, add the target as a linked file
     target_link_libraries(${targetName} PUBLIC ${libName})
   endif()
@@ -75,6 +76,38 @@ AddDep(Engine GLM glm glm::glm 0 https://github.com/g-truc/glm.git efec5db081e3a
 AddDep(Engine ENTT EnTT EnTT::EnTT 0 https://github.com/skypjack/entt.git e48817d518c0ada57665be07ba9961c19f71b502)
 AddDep(Engine SPDLOG spdlog spdlog 0 https://github.com/gabime/spdlog.git 5a589438d2d2abc67bdbec2aad7e2a94800c00ea)
 AddDep(Engine STB stb stb 1 https://github.com/nothings/stb.git 8b5f1f37b5b75829fc72d38e7b5d4bcbf8a26d55)
+
+# disable non-requisite free type libraries:
+# // Disable support of compressed WOFF2 fonts.
+# FT_DISABLE_BROTLI:BOOL=OFF
+# // Disable support of bzip2 compressed fonts.
+# FT_DISABLE_BZIP2:BOOL=OFF
+# // Disable HarfBuzz (used for improving auto-hinting of OpenType fonts).
+# FT_DISABLE_HARFBUZZ:BOOL=OFF
+# // Disable support of PNG compressed OpenType embedded bitmaps.
+# FT_DISABLE_PNG:BOOL=OFF
+# // Disable use of system zlib and use internal zlib library instead.
+# FT_DISABLE_ZLIB:BOOL=OFF
+SET(FT_DISABLE_BROTLI ON CACHE INTERNAL "Disable support of compressed WOFF2 fonts." FORCE)
+SET(FT_DISABLE_BZIP2 ON CACHE INTERNAL "Disable support of bzip2 compressed fonts." FORCE)
+SET(FT_DISABLE_HARFBUZZ ON CACHE INTERNAL "Disable HarfBuzz (used for improving auto-hinting of OpenType fonts)." FORCE)
+SET(FT_DISABLE_PNG ON CACHE INTERNAL "Disable support of PNG compressed OpenType embedded bitmaps." FORCE)
+SET(FT_DISABLE_ZLIB ON CACHE INTERNAL "Disable use of system zlib and use internal zlib library instead." FORCE)
+AddDep(Engine FREETYPE Freetype freetype 0 https://gitlab.freedesktop.org/freetype/freetype.git 4e61303a3b0e6656c38dd9da9f70d18d7e30585b)
+
+if(TARGET Freetype::Freetype)
+    message(STATUS "Found freetype library")
+endif()
+
+# MSDF Gen Specific Settings
+# Look at MTSDF for soft effects as well (potentially)
+set(MSDF_ATLAS_NO_ARTERY_FONT ON CACHE INTERNAL "Disable Artery Font export and do not require its submodule" FORCE)
+set(MSDF_ATLAS_USE_SKIA OFF CACHE INTERNAL "Build with the Skia library" FORCE)
+set(MSDF_ATLAS_USE_VCPKG OFF CACHE INTERNAL "Use vcpkg package manager to link project dependencies" FORCE)
+set(MSDF_ATLAS_STRIPPED ON CACHE INTERNAL "Enable font loading ONLY (i.e. remove dependency on lib png and tinyxml2" FORCE)
+set(MSDF_ATLAS_BUILD_STANDALONE OFF CACHE INTERNAL "Build the msdf-atlas-gen standalone executable" FORCE)
+set(MSDFGEN_FREETYPE_SUBDIRECTORY ON CACHE INTERNAL "Freetype has been included as a subdirectory" FORCE)
+AddDep(Engine MSDF_ATLAS_GEN msdf-atlas-gen msdf-atlas-gen 0 https://github.com/Chlumsky/msdf-atlas-gen.git 3cf874b39a2ea0acd316651cf10f5d13f75371fd)
 
 # if we are on replit then we are going to have to 
 # link libfmt as well

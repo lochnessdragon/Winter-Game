@@ -137,8 +137,8 @@ const char* translateGLEnum(GLenum value) {
 }
 
 Shader::Shader(const std::string& vertFile, const std::string& fragFile) : uniformVars(), attribs() {
-	std::string vertSrc = std::string(read_file(vertFile));
-	std::string fragSrc = std::string(read_file(fragFile));
+	std::string vertSrc = read_file_str(vertFile);
+	std::string fragSrc = read_file_str(fragFile);
 
 	// prepend the correct version to the beginning of the source file
 #ifdef PLATFORM_WEB
@@ -149,11 +149,11 @@ Shader::Shader(const std::string& vertFile, const std::string& fragFile) : unifo
 	fragSrc.insert(0, "#version 330 core\n");
 #endif
 
-	Log::getRendererLog()->trace("Transformed vertex shader.");
-	Log::getRendererLog()->trace("Transformed fragment shader.");
+	Log::getRendererLog()->trace("Transformed vertex shader!");
+	Log::getRendererLog()->trace("Transformed fragment shader!");
 
-	GLuint vertObj = compileShader(GL_VERTEX_SHADER, vertSrc.c_str());
-	GLuint fragObj = compileShader(GL_FRAGMENT_SHADER, fragSrc.c_str());
+	GLuint vertObj = compileShader(GL_VERTEX_SHADER, vertFile, vertSrc.c_str());
+	GLuint fragObj = compileShader(GL_FRAGMENT_SHADER, fragFile, fragSrc.c_str());
 
 	// delete[] vertSrc;
 	// delete[] fragSrc;
@@ -168,7 +168,7 @@ Shader::Shader(const std::string& vertFile, const std::string& fragFile) : unifo
 	glGetProgramiv(this->handle, GL_LINK_STATUS, &success);
 
 	if (!success) {
-		Log::getRendererLog()->error("Error whilst linking shader program");
+		Log::getRendererLog()->error("Error whilst linking shader program (vertex filename={}, fragment filename={})", vertFile, fragFile);
 
 		GLint logSize;
 		glGetProgramiv(this->handle, GL_INFO_LOG_LENGTH, &logSize);
@@ -234,7 +234,7 @@ void Shader::use() {
 	glUseProgram(this->handle);
 }
 
-GLuint Shader::compileShader(GLenum type, const char* source) {
+GLuint Shader::compileShader(GLenum type, const std::string& filename, const char* source) {
 	GLuint shader = glCreateShader(type);
 	glShaderSource(shader, 1, &source, nullptr);
 	glCompileShader(shader);
@@ -246,13 +246,13 @@ GLuint Shader::compileShader(GLenum type, const char* source) {
 	if (!success) {
 		switch (type) {
 		case GL_VERTEX_SHADER:
-			Log::getRendererLog()->error("Error compiling vertex shader!");
+			Log::getRendererLog()->error("Error compiling vertex shader! (filename={})", filename);
 			break;
 		case GL_FRAGMENT_SHADER:
-			Log::getRendererLog()->error("Error compiling fragment shader!");
+			Log::getRendererLog()->error("Error compiling fragment shader! (filename={})", filename);
 			break;
 		default:
-			Log::getRendererLog()->error("Error compiling <missing-type> shader!");
+			Log::getRendererLog()->error("Error compiling <missing-type> shader! (filename={})", filename);
 			break;
 		}
 
@@ -271,8 +271,12 @@ GLuint Shader::compileShader(GLenum type, const char* source) {
 }
 
 void Shader::loadUniform(const std::string& name, glm::mat3 matrix) {
-	ShaderVariable uniform = this->uniformVars.at(name);
+	if (this->uniformVars.count(name) <= 0) {
+		throw std::invalid_argument("Error: The uniform variable " + name + " does not exist on this shader.");
+	}
 	
+	ShaderVariable uniform = this->uniformVars.at(name);
+
 	if (uniform.type != GL_FLOAT_MAT3 || uniform.size != 1) {
 		throw std::invalid_argument("Error: " + name + " is not a mat4 variable that exists on this shader.");
 	}
@@ -281,6 +285,10 @@ void Shader::loadUniform(const std::string& name, glm::mat3 matrix) {
 }
 
 void Shader::loadUniform(const std::string& name, glm::mat4 matrix) {
+	if (this->uniformVars.count(name) <= 0) {
+		throw std::invalid_argument("Error: The uniform variable " + name + " does not exist on this shader.");
+	}
+
 	ShaderVariable uniform = this->uniformVars.at(name);
 
 	if (uniform.type != GL_FLOAT_MAT4 || uniform.size != 1) {
@@ -291,6 +299,10 @@ void Shader::loadUniform(const std::string& name, glm::mat4 matrix) {
 }
 
 void Shader::loadUniform(const std::string& name, int value) {
+	if (this->uniformVars.count(name) <= 0) {
+		throw std::invalid_argument("Error: The uniform variable " + name + " does not exist on this shader.");
+	}
+
 	ShaderVariable uniform = this->uniformVars.at(name);
 
 	if (!(uniform.type == GL_INT || uniform.type == GL_SAMPLER_2D) || uniform.size != 1) {
@@ -301,6 +313,10 @@ void Shader::loadUniform(const std::string& name, int value) {
 }
 
 void Shader::loadUniform(const std::string& name, float value) {
+	if (this->uniformVars.count(name) <= 0) {
+		throw std::invalid_argument("Error: The uniform variable " + name + " does not exist on this shader.");
+	}
+
 	ShaderVariable uniform = this->uniformVars.at(name);
 
 	if (uniform.type != GL_FLOAT || uniform.size != 1) {
@@ -311,6 +327,10 @@ void Shader::loadUniform(const std::string& name, float value) {
 }
 
 void Shader::loadUniform(const std::string& name, glm::vec2 value) {
+	if (this->uniformVars.count(name) <= 0) {
+		throw std::invalid_argument("Error: The uniform variable " + name + " does not exist on this shader.");
+	}
+
 	ShaderVariable uniform = this->uniformVars.at(name);
 
 	if (uniform.type != GL_FLOAT_VEC2 || uniform.size != 1) {
@@ -321,6 +341,10 @@ void Shader::loadUniform(const std::string& name, glm::vec2 value) {
 }
 
 void Shader::loadUniform(const std::string& name, glm::vec3 value) {
+	if (this->uniformVars.count(name) <= 0) {
+		throw std::invalid_argument("Error: The uniform variable " + name + " does not exist on this shader.");
+	}
+
 	ShaderVariable uniform = this->uniformVars.at(name);
 
 	if (uniform.type != GL_FLOAT_VEC3 || uniform.size != 1) {
@@ -328,4 +352,19 @@ void Shader::loadUniform(const std::string& name, glm::vec3 value) {
 	}
 
 	glUniform3fv(uniform.location, 1, glm::value_ptr(value));
+}
+
+void Shader::loadUniform(const std::string& name, glm::vec4 value)
+{
+	if (this->uniformVars.count(name) <= 0) {
+		throw std::invalid_argument("Error: The uniform variable " + name + " does not exist on this shader.");
+	}
+
+	ShaderVariable uniform = this->uniformVars.at(name);
+
+	if (uniform.type != GL_FLOAT_VEC4 || uniform.size != 1) {
+		throw std::invalid_argument("Error: " + name + " is not an vec4 variable that exists on this shader.");
+	}
+
+	glUniform4fv(uniform.location, 1, glm::value_ptr(value));
 }

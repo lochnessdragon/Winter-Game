@@ -46,6 +46,8 @@ public:
     ~Window();
 
     bool shouldClose();
+    void setShouldClose();
+    
     void swap();
     glm::ivec2 getWindowSize();
 

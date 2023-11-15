@@ -1,8 +1,15 @@
 #pragma once
 
+
+#ifdef _MSC_VER
+#pragma warning(disable: 4201) // disable warning 4201 from glm
+#endif
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+#ifdef _MSC_VER
+#pragma warning(default: 4201) // enable warning 4201 back
+#endif
 
 #include "window.h"
 #include <memory>

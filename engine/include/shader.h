@@ -25,7 +25,7 @@ private:
     std::unordered_map<std::string, ShaderVariable> uniformVars;
     std::unordered_map<std::string, ShaderVariable> attribs;
 
-    GLuint compileShader(GLenum type, const char* source);
+    GLuint compileShader(GLenum type, const std::string& filename, const char* source);
 public:
     Shader(const std::string& vertFile, const std::string& fragFile);
     ~Shader();
@@ -40,4 +40,5 @@ public:
     void loadUniform(const std::string& name, float value); // { glUniform1f(location, value); }
     void loadUniform(const std::string& name, glm::vec2 value); // { glUniform2fv(location, 1, glm::value_ptr(value)); }
     void loadUniform(const std::string& name, glm::vec3 value); // { glUniform3fv(location, 1, glm::value_ptr(value)); }
+    void loadUniform(const std::string& name, glm::vec4 value);
 };
