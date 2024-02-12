@@ -41,4 +41,5 @@ public:
     void loadUniform(const std::string& name, glm::vec2 value); // { glUniform2fv(location, 1, glm::value_ptr(value)); }
     void loadUniform(const std::string& name, glm::vec3 value); // { glUniform3fv(location, 1, glm::value_ptr(value)); }
     void loadUniform(const std::string& name, glm::vec4 value);
+    void loadUniformArray(const std::string& name, int count, int* values);
 };

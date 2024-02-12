@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.11)
 
 include(FetchContent)
 
@@ -28,7 +28,7 @@ function(AddDep targetName depName pkgName libName headerOnly gitUrl gitTag)
 
       if(headerOnly)
         # only include the file
-        target_include_directories(${targetName} PUBLIC ${${pkgName}_SOURCE_DIR})
+        target_include_directories(${targetName} SYSTEM PUBLIC ${${pkgName}_SOURCE_DIR})
       else()
         # link the library
         target_link_libraries(${targetName} PUBLIC ${libName})
@@ -45,7 +45,7 @@ function(AddDep targetName depName pkgName libName headerOnly gitUrl gitTag)
 		  target_link_libraries(${targetName} PUBLIC ${libName})
           message(STATUS "Added ${depName} as a subdirectory and linked ${libName}")
 		else()
-		  target_include_directories(${targetName} PUBLIC "${${depName}_DIR}/")
+		  target_include_directories(${targetName} SYSTEM PUBLIC "${${depName}_DIR}/")
 		endif()
       endif()
     endif()
@@ -76,6 +76,12 @@ AddDep(Engine GLM glm glm::glm 0 https://github.com/g-truc/glm.git efec5db081e3a
 AddDep(Engine ENTT EnTT EnTT::EnTT 0 https://github.com/skypjack/entt.git e48817d518c0ada57665be07ba9961c19f71b502)
 AddDep(Engine SPDLOG spdlog spdlog 0 https://github.com/gabime/spdlog.git 5a589438d2d2abc67bdbec2aad7e2a94800c00ea)
 AddDep(Engine STB stb stb 1 https://github.com/nothings/stb.git 8b5f1f37b5b75829fc72d38e7b5d4bcbf8a26d55)
+AddDep(Engine NLOHMANN_JSON nlohmann_json nlohmann_json::nlohmann_json 0 https://github.com/nlohmann/json.git develop)
+AddDep(Engine OPENAL_SOFT OpenAL OpenAL 0 https://github.com/kcat/openal-soft.git master)
+
+# ImGUI
+include(cmake/imgui.cmake)
+target_link_libraries(Engine PUBLIC imgui)
 
 # disable non-requisite free type libraries:
 # // Disable support of compressed WOFF2 fonts.

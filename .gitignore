@@ -15,6 +15,9 @@ engine/lib/*
 # build files
 build/
 
+# imgui
+imgui.ini
+
 # renderdoc
 *.cap
 

@@ -12,14 +12,16 @@
 * [3] = Bottom-right
 */
 
-TextRenderer::TextRenderer(std::shared_ptr<Window> window) : textShader("res/shaders/glyph.vert", "res/shaders/glyph.frag"), dynamicMesh(createDynMesh()), quadIndex(0), vertexData(), uvData()
+TextRenderer::TextRenderer(std::shared_ptr<Surface> surface) : textShader("res/shaders/glyph.vert", "res/shaders/glyph.frag"), dynamicMesh(createDynMesh()), quadIndex(0), vertexData(), uvData()
 {
-	glm::ivec2 size = window->getWindowSize();
+	glm::ivec2 size = surface->getSize();
 	this->orthoMat = glm::ortho(0.0f, (float)size.x, (float)size.y, 0.0f, -1.0f, 1.0f);
 
-	window->getWindowResizeHandler().addListener([this](const WindowResizeEventData& data) {
+	// tbh, this was an inelegant solution at best.
+	/*window->getWindowResizeHandler().addListener([this](const WindowResizeEventData& data) {
 		this->orthoMat = glm::ortho(0.0f, (float) data.width, (float) data.height, 0.0f, -1.0f, 1.0f);
-	});
+		return false;
+	});*/
 }
 
 
@@ -177,7 +179,8 @@ void TextRenderer::flush() {
 }
 
 void TextRenderer::endFrame() {
-	flush();
+	if (quadIndex > 0)
+		flush();
 }
 
 std::shared_ptr<Mesh> TextRenderer::createDynMesh() {

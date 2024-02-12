@@ -63,7 +63,7 @@ Texture Font::generateAtlas(const std::string& filename) {
                 fontName = "<no-name-provided>";
 
             // somehow, we need to copy the bitmap and glyphs outside the scope.
-            Log::getRendererLog()->info("Generated font atlas: {} x {} for: ", bitmap.width, bitmap.height, fontName);
+            Log::getRendererLog()->info("Generated font atlas: {} x {} for: {} ({})", bitmap.width, bitmap.height, fontName, filename);
 
             // Cleanup before return
             msdfgen::destroyFont(font);
@@ -75,11 +75,14 @@ Texture Font::generateAtlas(const std::string& filename) {
             spec.format = GL_RGB;
             spec.scaling = TextureScaling::Linear;
             return Texture(spec, static_cast<const unsigned char*>(bitmap.pixels));
+        } else {
+            msdfgen::deinitializeFreetype(ft);
+            
+            throw std::runtime_error("MSDF Gen failed to load font: " + filename);
         }
-        msdfgen::deinitializeFreetype(ft);
+    } else {
+        throw std::runtime_error("Failed to intialize freetype when creating font file: " + filename);
     }
-
-    throw std::runtime_error("Failed to create font from file: " + filename);
 }
 
 Font::Font(const std::string& filename) : glyphs(), fontGeometry(&this->glyphs), atlas(generateAtlas(filename)) {}

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.11)
 
 project(GameOff)
 set (CMAKE_CXX_STANDARD 17)
@@ -54,3 +54,9 @@ endif()
 if( APPLE )
     set_target_properties(GameOff PROPERTIES XCODE_GENERATE_SCHEME TRUE XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
+
+# copy over OpenAL32.dll
+add_custom_command(TARGET GameOff
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy ${OpenAL_BINARY_DIR}/$<CONFIGURATION>/OpenAL32.dll ${GameOff_BINARY_DIR}/$<CONFIGURATION>/.
+)

@@ -5,40 +5,86 @@
 #include <glm/gtx/string_cast.hpp>
 #include <scene/sprite.h>
 #include <scene/transform.h>
+#include <scene/colliders.h>
+#include <scene/rigidbodies.h>
+#include <imgui_setup.h>
+#include <misc/cpp/imgui_stdlib.h>
+#include "player.h" 
+#include "tilemap_editor.h"
+#include "colors.h"
+#include <audio/audio.h>
 
-Application::Application() {
-	win = std::make_shared<Window>("Github Game Off 2023", 1200, 800);
+// implement 320 x 180 pixel-perfect camera
+// 29 long dialogue line 1 (3, 75)
+// 26 long dialoque line 2 (3, 84)
+
+Application::Application() : showColliders(false) {
+	win = std::make_shared<Window>("Cozy Winter Jam - Better Together", 960, 540);
 	Log::getGameLog()->trace("Surface created");
-	win->getKeyEventHandler().addListener([this](auto keyData) {
+	Input::get()->getKeyEventHandler().addListener([this](auto keyData) {
 		if (keyData.key == GLFW_KEY_ESCAPE && keyData.action == GLFW_PRESS) {
 			win->setShouldClose();
+			return true;
 		}
+		return false;
 	});
+	Input::get()->joystickInfo();
+	Input::get()->map("res/input.json");
 
-	// set up input system
-	Input::setHandle(win->getHandle());
-
+	// renderers
 	renderer2d = std::make_shared<Renderer2D>();
-	textRenderer = std::make_shared<TextRenderer>(win);
+
+	// setup imgui
+	setupImgui(win);
 
 	// create a font
 	font = std::make_shared<Font>("res/fonts/OpenSans-VariableFont_wdth,wght.ttf");
+	small_font = std::make_shared<Font>("res/fonts/objectives.ttf");
+	large_font = std::make_shared<Font>("res/fonts/slkscr.ttf");
 
-	glm::ivec2 winSize = win->getWindowSize();
+	glm::ivec2 winSize = win->getSize();
 	Log::getGameLog()->trace("Creating a camera: win_size x={} y={}", winSize.x, winSize.y);
-	camera = std::make_shared<OrthoCamera>(win, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0));
+	camera = std::make_shared<PixelPerfectCamera>(win, 160, 90, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0));
 
-	renderer2d->setClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	textRenderer = std::make_shared<TextRenderer>(camera->getFBO());
+
+	// textures
+	uiTexture = std::make_shared<Texture>("res/textures/ui.png");
+	dialogue = std::make_shared<DialogueSystem>(uiTexture, "Howdy there, welcome to our little town. We share everything! That is to say...\n We\n want\n your\n stuff.\n :)");
 
 	deltaTime = 0.0f;
 	lastTime = glfwGetTime();
 
-	auto entity = scene.create();
-	auto& transform = scene.emplace<Transform>(entity);
-	scene.emplace<SpriteComponent>(entity);
-	transform.scale *= 40;
-	transform.position.x = 40;
-	transform.position.y = 40;
+	// ecs systems
+	player = scene.create();
+	auto& transform = scene.emplace<Transform>(player);
+	transform.position.x = 50;
+	transform.position.y = 50;
+	transform.scale *= 8;
+	auto& sprite = scene.emplace<SpriteComponent>(player);
+	sprite.texture = std::make_shared<Texture>("res/textures/player.png");
+	auto& player_comp = scene.emplace<PlayerComponent>(player);
+	scene.emplace<RectangleCollider2D>(player);
+	scene.emplace<Rigidbody2D>(player);
+	player_comp.speed = 40.0f;
+
+	bg = scene.create();
+	scene.emplace<Transform>(bg);
+	scene.emplace<Tilemap>(bg, "res/rooms/home.bin", std::make_shared<Spriteset>(std::make_shared<Texture>("res/textures/tileset.png"), 8));
+	auto& tilemapCollider = scene.emplace<TilemapCollider2D>(bg);
+	tilemapCollider.impassable = { 0, 1, 2, 3, 4, 5, 6, 8, 10, 16, 18, 19, 20, 24, 25, 26, 60, 61, 62, 63 };
+
+	tilemapEditor = std::make_shared<TilemapEditor>("res/rooms/home.bin", win);
+	tilemapEditor->setTilemap(bg);
+	
+	// create a button
+	/*{
+		auto button = clickableSystem->createButton(std::make_shared<Texture>("res/textures/allow_button.png", TextureScaling::Nearest), []() { Log::getGameLog()->info("Button clicked!"); });
+		auto& transform = scene.get<Transform>(button);
+		transform.scale *= 160;
+		transform.position.x = 200;
+		transform.position.y = 200;
+	}*/
 
 	Log::getGameLog()->trace("Initialization finished");
 }
@@ -51,6 +97,12 @@ void Application::update() {
 		lastTime = now;
 	}
 
+	// game logic
+	if (!dialogue->enabled)
+		player_move(deltaTime, scene, player, bg);
+	tilemapEditor->update(scene);
+	dialogue->update(deltaTime);
+
 	// update dirty models
 	auto transforms = scene.view<Transform>();
 	transforms.each([](auto& transform) {
@@ -60,18 +112,36 @@ void Application::update() {
 	});
 
 	// render
+	camera->startScene();
+	renderer2d->setClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	renderer2d->startFrame();
+	auto& bgTransform = scene.get<Transform>(bg);
+	auto& bgTilemap = scene.get<Tilemap>(bg);
+
+	renderer2d->renderTilemap(camera, bgTransform, bgTilemap);
 
 	auto sprites = scene.view<Transform, SpriteComponent>();
 	sprites.each([this](auto& transform, auto& sprite) {
-		this->renderer2d->renderSprite(camera, transform, sprite.texture, sprite.color);
+		this->renderer2d->renderSprite(camera, transform, sprite);
 	});
 
-	renderer2d->endFrame();
+	dialogue->render(camera, renderer2d, textRenderer, large_font);
 
-	textRenderer->render("Github Game Off - build alpha.1", font, { 5.0, 36.0 }, 36, { 1.0f, 1.0f, 1.0f, 1.0f });
+	renderer2d->endFrame();
+	//textRenderer->render(dialogueInfo.text, large_font, { (float) dialogueInfo.x, (float) dialogueInfo.y }, 8, Colors::White);
 	textRenderer->endFrame();
+	camera->endScene();
+
+	// dialogue text (A little funky, but like, who isn't?
+	//textRenderer->render("Github Game Off - build alpha.1", large_font, { 5.0, 36.0 }, 36, Colors::White);
+	//textRenderer->endFrame();
+
+	imguiStartFrame();
+	player_debug(scene, player);
+	tilemapEditor->gui(scene);
+	imguiEndFrame();
+
 	win->swap();
 
-	Input::update();
+	Input::get()->update();
 }

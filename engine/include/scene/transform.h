@@ -1,13 +1,14 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 struct Transform {
 private:
     // quat
     // glm::quat quaternionRotation;
 
-    glm::mat4 modelMat;
+    glm::mat4 modelMat = glm::identity<glm::mat4>();
 public:
     glm::vec3 position = { 0, 0, 0 };
     glm::vec3 rotation = { 0, 0, 0 };

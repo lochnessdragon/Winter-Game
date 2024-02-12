@@ -30,7 +30,7 @@ private:
 
 	std::shared_ptr<Mesh> createDynMesh();
 public:
-	TextRenderer(std::shared_ptr<Window> window);
+	TextRenderer(std::shared_ptr<Surface> drawableSurf);
 
 	/*
 	* render - displays a message to the screen. Don't forget to call endFrame()

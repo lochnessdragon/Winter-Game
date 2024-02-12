@@ -368,3 +368,15 @@ void Shader::loadUniform(const std::string& name, glm::vec4 value)
 
 	glUniform4fv(uniform.location, 1, glm::value_ptr(value));
 }
+
+void Shader::loadUniformArray(const std::string& name, int count, int* values) { 
+	if (this->uniformVars.count(name) <= 0) {
+		throw std::invalid_argument("Error: The uniform variable " + name + " does not exist on this shader.");
+	}
+
+	ShaderVariable uniform = this->uniformVars.at(name); 
+
+	// write check for var type
+
+	glUniform1iv(uniform.location, count, values); 
+};
