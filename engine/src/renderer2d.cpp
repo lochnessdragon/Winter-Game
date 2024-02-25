@@ -16,7 +16,7 @@
 */
 
 // don't know if I love the white texture's initialization. It's concise, but not readable
-Renderer2D::Renderer2D() : whiteTex(createWhiteTexture()), spriteShader("res/shaders/sprite_2d.vert", "res/shaders/sprite_2d.frag"), dynMesh(createDynMesh()), quadIdx(0), textureSlotIdx(1) {
+Renderer2D::Renderer2D() : whiteTex(createWhiteTexture()), spriteShader("res/shaders/sprite_2d.vert", "res/shaders/sprite_2d.frag"), lineShader("res/shaders/line.vert", "res/shaders/line.frag"), dynMesh(createDynMesh()), quadIdx(0), textureSlotIdx(1), lineIdx(0) {
 	glEnable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
@@ -26,6 +26,11 @@ Renderer2D::Renderer2D() : whiteTex(createWhiteTexture()), spriteShader("res/sha
 	spriteShader.use();
 	int textureIds[32] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
 	spriteShader.loadUniformArray("spriteTextures[0]", 32, textureIds);
+
+	// create dynamic mesh for the lines
+	lineMesh = std::make_shared<Mesh>(MeshUsage::Dynamic);
+	lineMesh->attachBuffer(GL_FLOAT, 2, MAX_LINE_VERTS * (uint32_t)sizeof(glm::vec2), nullptr);
+	lineMesh->attachBuffer(GL_FLOAT, 4, MAX_LINE_VERTS * (uint32_t)sizeof(glm::vec4), nullptr);
 }
 
 std::shared_ptr<Texture> Renderer2D::createWhiteTexture() {
@@ -68,32 +73,24 @@ void Renderer2D::setClearColor(glm::vec4 color) {
 	glClearColor(color.r, color.g, color.b, color.a);
 }
 
-void Renderer2D::startFrame() {
+void Renderer2D::startFrame(std::shared_ptr<Camera> camera) {
 	this->clear();
+	// update view and projection matrix
+	viewMat = camera->getViewMat();
+	projMat = camera->getProjMat();
 }
 
 //void Renderer2D::renderSprite(std::shared_ptr<Camera> camera, Transform& transform) {
 //	renderSprite(camera, transform, whiteTex);
 //}
 
-void Renderer2D::checkFlushConditions(std::shared_ptr<Camera> camera, std::shared_ptr<Texture> texture, float& textureIndex) {
+void Renderer2D::checkQuadFlushConditions(std::shared_ptr<Texture> texture, float& textureIndex) {
 	if (quadIdx >= MAX_QUADS)
-		flush();
+		flushQuads();
 
 	if (!texture) {
 		texture = whiteTex;
 	}
-
-	// skip non-consistency checks if this is our first quad
-	if (quadIdx > 0) {
-		if (viewMat != camera->getViewMat() || projMat != camera->getProjMat()) {
-			flush();
-		}
-	}
-
-	// update view and projection matrix
-	viewMat = camera->getViewMat();
-	projMat = camera->getProjMat();
 
 	textureIndex = -1.0f;
 	for (uint32_t i = 1; i < textureSlotIdx; i++)
@@ -107,7 +104,7 @@ void Renderer2D::checkFlushConditions(std::shared_ptr<Camera> camera, std::share
 
 	if (textureIndex < 0) {
 		if (textureSlotIdx >= MAX_TEXTURES) {
-			flush();
+			flushQuads();
 		}
 
 		textureIndex = (float) textureSlotIdx;
@@ -160,51 +157,87 @@ void Renderer2D::addQuad(glm::mat4 modelMat, glm::vec4 uvs, float textureIdx, gl
 	quadIdx++;
 }
 
-void Renderer2D::renderSprite(std::shared_ptr<Camera> camera, Transform& transform, SpriteComponent& sprite) {
+void Renderer2D::checkLineFlushConditions() {
+	if (lineIdx >= MAX_LINES)
+		flushLines();
+}
+
+void Renderer2D::renderSprite(Transform& transform, SpriteComponent& sprite) {
 	float textureIndex = 0;
-	checkFlushConditions(camera, sprite.texture, textureIndex);
+	checkQuadFlushConditions(sprite.texture, textureIndex);
 
 	glm::mat4 modelMat = transform.getModelMat();
 	addQuad(modelMat, sprite.uvs, textureIndex, sprite.color);
 }
 
-void Renderer2D::renderSpriteSet(std::shared_ptr<Camera> camera, Transform& transform, std::shared_ptr<Spriteset> spriteset, int id, glm::vec4 color) {
+void Renderer2D::renderSpriteSet(Transform& transform, std::shared_ptr<Spriteset> spriteset, int id, glm::vec4 color) {
 	float textureIdx;
-	checkFlushConditions(camera, spriteset->texture, textureIdx);
+	checkQuadFlushConditions(spriteset->texture, textureIdx);
 	glm::vec4 uvs = spriteset->getUVCoords(id);
 
 	addQuad(transform.getModelMat(), uvs, textureIdx, color);
 }
 
-void Renderer2D::renderTilemap(std::shared_ptr<Camera> camera, Transform& transform, Tilemap& tilemap) {
+void Renderer2D::renderTilemap(Transform& transform, Tilemap& tilemap) {
 	int baseX = tilemap.getSpriteset()->tileSize / 2;
 	int baseY = tilemap.getSpriteset()->tileSize / 2;
+
 	for (int y = 0; y < tilemap.height; y++) {
 		for (int x = 0; x < tilemap.width; x++) {
 			int tileId = tilemap.get({ x, y });
+			
 			// skip empty
 			if (tileId >= 0) {
+				// we have to retrive the texture index each iteration to ensure we don't overflow the quad buffer
 				float textureIndex = 0;
-				checkFlushConditions(camera, tilemap.getSpriteset()->texture, textureIndex);
+				checkQuadFlushConditions(tilemap.getSpriteset()->texture, textureIndex);
+
 				// this is an absolute block of a unit. Basically converts the tile position to an onscreen position in coords.
+				// this is very specific for an orthographic camera
+				// also, it doesn't support transforming the tilemap, which is defininitely a TODO!
 				glm::mat4 modelMat = glm::translate(glm::mat4(1), { 
 					((float)x * tilemap.getSpriteset()->tileSize) + (float) baseX, 
 					((float)y * tilemap.getSpriteset()->tileSize) + (float) baseY, 
 					0.0f }) * glm::scale(glm::mat4(1), glm::vec3(tilemap.getSpriteset()->tileSize / 2));
+
+				// finally, add the quad to the buffer
 				addQuad(modelMat, tilemap.getSpriteset()->getUVCoords(tileId), textureIndex, { 1,1,1,1 });
 			}
 		}
 	}
 }
 
-void Renderer2D::drawRect(glm::vec2 centerPos, glm::vec2 size) {
-	Log::getRendererLog()->warn("Draw rect not implemented: <{}, {}>", glm::to_string(centerPos), glm::to_string(size));
+void Renderer2D::drawLine(glm::vec2 pos1, glm::vec2 pos2, glm::vec4 color) {
+	checkLineFlushConditions();
+	lineVerts[lineIdx] = pos1;
+	lineVerts[lineIdx + 1] = pos2;
+
+	lineColors[lineIdx] = color;
+	lineColors[lineIdx + 1] = color;
+
+	lineIdx += 2;
 }
-void Renderer2D::drawCircle(glm::vec2 pos, float radius) {
-	Log::getRendererLog()->warn("Draw circle not implemented: <{}, {}>", glm::to_string(pos), radius);
+
+void Renderer2D::drawRect(glm::vec2 centerPos, glm::vec2 size, glm::vec4 color) {
+	glm::vec2 halfSize = size / 2.0f;
+	drawLine({ centerPos.x - halfSize.x, centerPos.y - halfSize.y }, { centerPos.x + halfSize.x, centerPos.y - halfSize.y }, color);
+	drawLine({ centerPos.x + halfSize.x, centerPos.y - halfSize.y }, { centerPos.x + halfSize.x, centerPos.y + halfSize.y }, color);
+	drawLine({ centerPos.x + halfSize.x, centerPos.y + halfSize.y }, { centerPos.x - halfSize.x, centerPos.y + halfSize.y }, color);
+	drawLine({ centerPos.x - halfSize.x, centerPos.y + halfSize.y }, { centerPos.x - halfSize.x, centerPos.y - halfSize.y }, color);
+}
+
+void Renderer2D::drawCircle(glm::vec2 pos, float radius, float thickness, glm::vec4 color) {
+
 }
 
 void Renderer2D::flush() {
+	if (quadIdx > 0)
+		flushQuads();
+	if (lineIdx > 0)
+		flushLines();
+}
+
+void Renderer2D::flushQuads() {
 	spriteShader.use();
 	spriteShader.loadUniform("VPMat", projMat * viewMat);
 
@@ -223,6 +256,23 @@ void Renderer2D::flush() {
 
 	quadIdx = 0;
 	textureSlotIdx = 1; // 0 is white texture
+}
+
+void Renderer2D::flushLines() {
+	lineShader.use();
+	lineShader.loadUniform("VPMat", projMat * viewMat);
+
+	lineMesh->bind();
+	lineMesh->setBuffer(0, lineIdx * sizeof(glm::vec2), lineVerts);
+	lineMesh->setBuffer(1, lineIdx * sizeof(glm::vec4), lineColors);
+	glDrawArrays(GL_LINES, 0, lineIdx);
+	lineMesh->unbind();
+
+	lineIdx = 0;
+}
+
+void Renderer2D::flushCircles()
+{
 }
 
 void Renderer2D::endFrame() {

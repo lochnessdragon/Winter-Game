@@ -146,7 +146,7 @@ void DialogueSystem::update(double deltaTime)
 void DialogueSystem::render(std::shared_ptr<Camera> camera, std::shared_ptr<Renderer2D> renderer, std::shared_ptr<TextRenderer> textRenderer, std::shared_ptr<Font> largeFont)
 {
 	if (enabled) {
-		renderer->renderSprite(camera, bgTransform, bgSprite);
+		renderer->renderSprite(bgTransform, bgSprite);
 
 		size_t line1 = currentLine % 2 == 0 ? currentLine : currentLine - 1;
 		if (line1 == currentLine) {
@@ -158,7 +158,7 @@ void DialogueSystem::render(std::shared_ptr<Camera> camera, std::shared_ptr<Rend
 		}
 
 		if (waitingOnUser) {
-			renderer->renderSprite(camera, pointerTransform, pointerSprite);
+			renderer->renderSprite(pointerTransform, pointerSprite);
 		}
 		
 	}

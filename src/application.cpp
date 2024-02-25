@@ -33,6 +33,7 @@ Application::Application() : showColliders(false) {
 
 	// renderers
 	renderer2d = std::make_shared<Renderer2D>();
+	renderer2d->setLineWidth(2.0f);
 
 	// setup imgui
 	setupImgui(win);
@@ -64,9 +65,12 @@ Application::Application() : showColliders(false) {
 	auto& sprite = scene.emplace<SpriteComponent>(player);
 	sprite.texture = std::make_shared<Texture>("res/textures/player.png");
 	auto& player_comp = scene.emplace<PlayerComponent>(player);
-	scene.emplace<RectangleCollider2D>(player);
-	scene.emplace<Rigidbody2D>(player);
+	auto& player_collider = scene.emplace<RectangleCollider2D>(player);
+	player_collider.offset = glm::vec2(0, -5.0f);
+	player_collider.size = glm::vec2(0.75f, 0.35f);
+	// scene.emplace<Rigidbody2D>(player);
 	player_comp.speed = 40.0f;
+	player_comp.show_colliders = false;
 
 	bg = scene.create();
 	scene.emplace<Transform>(bg);
@@ -114,16 +118,18 @@ void Application::update() {
 	// render
 	camera->startScene();
 	renderer2d->setClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	renderer2d->startFrame();
+	renderer2d->startFrame(camera);
 	auto& bgTransform = scene.get<Transform>(bg);
 	auto& bgTilemap = scene.get<Tilemap>(bg);
 
-	renderer2d->renderTilemap(camera, bgTransform, bgTilemap);
+	renderer2d->renderTilemap(bgTransform, bgTilemap);
 
 	auto sprites = scene.view<Transform, SpriteComponent>();
 	sprites.each([this](auto& transform, auto& sprite) {
-		this->renderer2d->renderSprite(camera, transform, sprite);
+		this->renderer2d->renderSprite(transform, sprite);
 	});
+
+	player_render(renderer2d, scene, player);
 
 	dialogue->render(camera, renderer2d, textRenderer, large_font);
 
