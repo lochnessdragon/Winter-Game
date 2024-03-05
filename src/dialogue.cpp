@@ -10,18 +10,8 @@ DialogueSystem::DialogueSystem(std::shared_ptr<Texture> uiTexture, std::string t
 {
 	setDialogue(text);
 
-	bgTransform.scale = glm::vec3(160.0f / 2.0f, 26.0f / 2.0f, 1.0f);
-	bgTransform.position = glm::vec3(160.0f / 2.0f, 26.0f / 2.0f, 0.0f);
-	bgSprite.texture = uiTexture;
-	bgSprite.uvs = uiTexture->getUVCoordsFromPixels({ 0, 0, 160, 26 });
-
-	pointerTransform.scale = glm::vec3(8.0f / 2.0f, 5.0f / 2.0f, 1.0f);
-	pointerTransform.position = glm::vec3(150.0f, 7.0f, 0.0f);
-	pointerSprite.texture = uiTexture;
-	pointerSprite.uvs = uiTexture->getUVCoordsFromPixels({160, 0, 8, 5});
-
-	bgTransform.recalculateModelMat();
-	pointerTransform.recalculateModelMat();
+	background = SpriteActor(glm::vec2(160.0f / 2.0f, 26.0f / 2.0f), 0.0f, glm::vec2(160.0f / 2.0f, 26.0f / 2.0f), uiTexture, Colors::White, uiTexture->getUVCoordsFromPixels({ 0, 0, 160, 26 }));
+	pointer = SpriteActor(glm::vec2(150.0f, 7.0f), 0.0f, glm::vec2(8.0f / 2.0f, 5.0f / 2.0f), uiTexture, Colors::White, uiTexture->getUVCoordsFromPixels({ 160, 0, 8, 5 }));
 
 	Input::get()->getKeyEventHandler().addListener([this](const KeyEventData& event) {
 		if (event.action == GLFW_PRESS && event.key == GLFW_KEY_Z) {
@@ -107,10 +97,6 @@ void DialogueSystem::setDialogue(std::string text)
 	if (substring.length() > 0) {
 		lines.push_back(substring);
 	}
-
-	for (std::string& str : lines) {
-		Log::getGameLog()->info("{}", str);
-	}
 }
 
 void DialogueSystem::update(double deltaTime)
@@ -143,10 +129,10 @@ void DialogueSystem::update(double deltaTime)
 	}
 }
 
-void DialogueSystem::render(std::shared_ptr<Camera> camera, std::shared_ptr<Renderer2D> renderer, std::shared_ptr<TextRenderer> textRenderer, std::shared_ptr<Font> largeFont)
+void DialogueSystem::render(std::shared_ptr<Renderer2D> renderer, std::shared_ptr<TextRenderer> textRenderer, std::shared_ptr<Font> largeFont)
 {
 	if (enabled) {
-		renderer->renderSprite(bgTransform, bgSprite);
+		background.render(renderer);
 
 		size_t line1 = currentLine % 2 == 0 ? currentLine : currentLine - 1;
 		if (line1 == currentLine) {
@@ -158,7 +144,7 @@ void DialogueSystem::render(std::shared_ptr<Camera> camera, std::shared_ptr<Rend
 		}
 
 		if (waitingOnUser) {
-			renderer->renderSprite(pointerTransform, pointerSprite);
+			pointer.render(renderer);
 		}
 		
 	}

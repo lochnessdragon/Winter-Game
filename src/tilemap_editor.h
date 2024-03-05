@@ -3,23 +3,22 @@
 #include <string>
 
 #include <tilemap.h>
-#include <entt/entt.hpp>
 #include <window.h>
 
 class TilemapEditor {
 private:
 	int currentBrushId;
 
-	entt::entity tilemapEntity;
+	std::shared_ptr<Tilemap> tilemap;
 	std::string filename;
 	std::shared_ptr<Window> window;
 
 	bool active = false;
 public:
-	TilemapEditor(std::string filename, std::shared_ptr<Window> win);
+	TilemapEditor(std::string filename, std::shared_ptr<Window> win, std::shared_ptr<Tilemap> tilemap);
 
-	void setTilemap(entt::entity tilemap) { tilemapEntity = tilemap; };
+	void setTilemap(std::shared_ptr<Tilemap> tilemap) { this->tilemap = tilemap; };
 
-	void update(entt::registry& scene);
-	void gui(entt::registry& scene);
+	void update();
+	void imgui();
 };

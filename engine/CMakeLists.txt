@@ -73,7 +73,7 @@ else()
 endif()
 
 AddDep(Engine GLM glm glm::glm 0 https://github.com/g-truc/glm.git efec5db081e3aad807d0731e172ac597f6a39447)
-AddDep(Engine ENTT EnTT EnTT::EnTT 0 https://github.com/skypjack/entt.git e48817d518c0ada57665be07ba9961c19f71b502)
+# AddDep(Engine ENTT EnTT EnTT::EnTT 0 https://github.com/skypjack/entt.git e48817d518c0ada57665be07ba9961c19f71b502) remove entt
 AddDep(Engine SPDLOG spdlog spdlog 0 https://github.com/gabime/spdlog.git 5a589438d2d2abc67bdbec2aad7e2a94800c00ea)
 AddDep(Engine STB stb stb 1 https://github.com/nothings/stb.git 8b5f1f37b5b75829fc72d38e7b5d4bcbf8a26d55)
 AddDep(Engine NLOHMANN_JSON nlohmann_json nlohmann_json::nlohmann_json 0 https://github.com/nlohmann/json.git develop)
@@ -133,6 +133,7 @@ target_include_directories(Engine PRIVATE "lib/par_shapes")
 # setup includes
 target_include_directories(Engine PUBLIC "include/")
 
+# Extra linux compiler options
 if( CMAKE_COMPILER_IS_GNUCC )
     message(STATUS "Linux build detected: " ${CMAKE_CXX_COMPILER_ID})
 
@@ -140,6 +141,7 @@ if( CMAKE_COMPILER_IS_GNUCC )
     target_link_libraries(Engine PUBLIC GL)
 endif()
 
+# Extra visual studio project settings
 if( MSVC )
     # extra debug flags
     string(REGEX REPLACE "/Z[iI7]" ""
@@ -151,5 +153,10 @@ if( MSVC )
          "${CMAKE_CXX_FLAGS_DEBUG}")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W4")
 
-    #target_compile_options(Engine PRIVATE /W4 /ZI)
+    # count includes with angle brackets as external to the project (don't warn about them)
+    # TODO: fix warnings on spdlog library
+    target_compile_options(Engine PRIVATE /external:anglebrackets)
+
+    # force headers and source files into directory tree in visual studio
+    assign_source_group(${SOURCES})
 endif()

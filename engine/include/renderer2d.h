@@ -12,10 +12,6 @@
 #include "shader.h"
 #include "mesh.h"
 #include "camera.h"
-#include "scene/transform.h"
-#include "scene/sprite.h"
-#include "spriteset.h"
-#include "tilemap.h"
 
 /**
 * We are reimplementing a lot of the 3d renderer methods. A better idea would be to have a base renderer class with derived rendering functionality.
@@ -86,10 +82,10 @@ public:
 
 	void startFrame(std::shared_ptr<Camera> camera);
 
-	// void renderSprite(std::shared_ptr<Camera> camera, Transform& transform); -- DEPRECATED
-	void renderSprite(Transform& transform, SpriteComponent& sprite);
+	void renderQuad(glm::mat4 modelMat, std::shared_ptr<Texture> texture, glm::vec4 uvs = { 0.0f, 0.0f, 1.0f, 1.0f }, glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f });
+	/*void renderSprite(Transform& transform, SpriteComponent& sprite);
 	void renderSpriteSet(Transform& transform, std::shared_ptr<Spriteset> spriteset, int id, glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f });
-	void renderTilemap(Transform& transform, Tilemap& tilemap);
+	void renderTilemap(Transform& transform, Tilemap& tilemap);*/
 
 	void setLineWidth(float size) { glLineWidth(size); };
 	void drawLine(glm::vec2 pos1, glm::vec2 pos2, glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f});

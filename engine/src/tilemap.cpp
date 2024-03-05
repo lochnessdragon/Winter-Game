@@ -7,7 +7,7 @@
 #include <log.h>
 #include <io.h>
 
-Tilemap::Tilemap(int width, int height, std::shared_ptr<Spriteset> tileset) : width(width), height(height), tileset(tileset) {
+Tilemap::Tilemap(int width, int height, std::shared_ptr<Spriteset> tileset) : width(width), height(height), tileset(tileset), Actor({0.0f, 0.0f}, 0.0f, glm::vec2(1.0f)) {
 	grid = new int[width * height];
 
 	for (int x = 0; x < width; x++) {
@@ -17,7 +17,7 @@ Tilemap::Tilemap(int width, int height, std::shared_ptr<Spriteset> tileset) : wi
 	}
 }
 
-Tilemap::Tilemap(const std::string& filename, std::shared_ptr<Spriteset> tileset) : tileset(tileset), grid(nullptr) {
+Tilemap::Tilemap(const std::string& filename, std::shared_ptr<Spriteset> tileset) : tileset(tileset), grid(nullptr), Actor({ 0.0f, 0.0f }, 0.0f, glm::vec2(1.0f)) {
 	load(filename);
 }
 
@@ -64,6 +64,7 @@ void Tilemap::load(const std::string& filename) {
 	if (file.is_open()) {
 		char code[3] = { 0 };
 		file.read(code, 3);
+		// don't allow reading just any binary file, if it doesn't have the magic word, it ain't ours.
 		if (strncmp(code, "MAP", 3) == 0) {
 			// this is a tilemap file
 			file.read((char*)&width, sizeof(int));
@@ -95,6 +96,31 @@ void Tilemap::load(const std::string& filename) {
 		else {
 			Log::getGameLog()->critical("Error loading tilemap: {}", filename);
 			throw std::runtime_error(filename + " is not a tilemap file.");
+		}
+	}
+}
+
+void Tilemap::render(std::shared_ptr<Renderer2D> renderer) {
+	int baseX = tileset->tileSize / 2;
+	int baseY = tileset->tileSize / 2;
+
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			int tileId = get({ x, y });
+			
+			// skip empty
+			if (tileId >= 0) {
+				// this is an absolute block of a unit. Basically converts the tile position to an onscreen position in coords.
+				// this is very specific for an orthographic camera
+				// also, it doesn't support transforming the tilemap, which is defininitely a TODO!
+				glm::mat4 modelMat = glm::translate(glm::mat4(1), { 
+					((float)x * tileset->tileSize) + (float) baseX, 
+					((float)y * tileset->tileSize) + (float) baseY, 
+					0.0f }) * glm::scale(glm::mat4(1), glm::vec3(tileset->tileSize / 2));
+
+				// finally, add the quad to the buffer
+				renderer->renderQuad(modelMat, tileset->texture, tileset->getUVCoords(tileId));
+			}
 		}
 	}
 }

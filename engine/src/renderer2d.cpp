@@ -80,10 +80,6 @@ void Renderer2D::startFrame(std::shared_ptr<Camera> camera) {
 	projMat = camera->getProjMat();
 }
 
-//void Renderer2D::renderSprite(std::shared_ptr<Camera> camera, Transform& transform) {
-//	renderSprite(camera, transform, whiteTex);
-//}
-
 void Renderer2D::checkQuadFlushConditions(std::shared_ptr<Texture> texture, float& textureIndex) {
 	if (quadIdx >= MAX_QUADS)
 		flushQuads();
@@ -157,55 +153,62 @@ void Renderer2D::addQuad(glm::mat4 modelMat, glm::vec4 uvs, float textureIdx, gl
 	quadIdx++;
 }
 
+void Renderer2D::renderQuad(glm::mat4 modelMat, std::shared_ptr<Texture> texture, glm::vec4 uvs, glm::vec4 color)
+{
+	float textureIndex = 0;
+	checkQuadFlushConditions(texture, textureIndex);
+	addQuad(modelMat, uvs, textureIndex, color);
+}
+
 void Renderer2D::checkLineFlushConditions() {
 	if (lineIdx >= MAX_LINES)
 		flushLines();
 }
 
-void Renderer2D::renderSprite(Transform& transform, SpriteComponent& sprite) {
-	float textureIndex = 0;
-	checkQuadFlushConditions(sprite.texture, textureIndex);
-
-	glm::mat4 modelMat = transform.getModelMat();
-	addQuad(modelMat, sprite.uvs, textureIndex, sprite.color);
-}
-
-void Renderer2D::renderSpriteSet(Transform& transform, std::shared_ptr<Spriteset> spriteset, int id, glm::vec4 color) {
-	float textureIdx;
-	checkQuadFlushConditions(spriteset->texture, textureIdx);
-	glm::vec4 uvs = spriteset->getUVCoords(id);
-
-	addQuad(transform.getModelMat(), uvs, textureIdx, color);
-}
-
-void Renderer2D::renderTilemap(Transform& transform, Tilemap& tilemap) {
-	int baseX = tilemap.getSpriteset()->tileSize / 2;
-	int baseY = tilemap.getSpriteset()->tileSize / 2;
-
-	for (int y = 0; y < tilemap.height; y++) {
-		for (int x = 0; x < tilemap.width; x++) {
-			int tileId = tilemap.get({ x, y });
-			
-			// skip empty
-			if (tileId >= 0) {
-				// we have to retrive the texture index each iteration to ensure we don't overflow the quad buffer
-				float textureIndex = 0;
-				checkQuadFlushConditions(tilemap.getSpriteset()->texture, textureIndex);
-
-				// this is an absolute block of a unit. Basically converts the tile position to an onscreen position in coords.
-				// this is very specific for an orthographic camera
-				// also, it doesn't support transforming the tilemap, which is defininitely a TODO!
-				glm::mat4 modelMat = glm::translate(glm::mat4(1), { 
-					((float)x * tilemap.getSpriteset()->tileSize) + (float) baseX, 
-					((float)y * tilemap.getSpriteset()->tileSize) + (float) baseY, 
-					0.0f }) * glm::scale(glm::mat4(1), glm::vec3(tilemap.getSpriteset()->tileSize / 2));
-
-				// finally, add the quad to the buffer
-				addQuad(modelMat, tilemap.getSpriteset()->getUVCoords(tileId), textureIndex, { 1,1,1,1 });
-			}
-		}
-	}
-}
+//void Renderer2D::renderSprite(Transform& transform, SpriteComponent& sprite) {
+//	float textureIndex = 0;
+//	checkQuadFlushConditions(sprite.texture, textureIndex);
+//
+//	glm::mat4 modelMat = transform.getModelMat();
+//	addQuad(modelMat, sprite.uvs, textureIndex, sprite.color);
+//}
+//
+//void Renderer2D::renderSpriteSet(Transform& transform, std::shared_ptr<Spriteset> spriteset, int id, glm::vec4 color) {
+//	float textureIdx = 0;
+//	checkQuadFlushConditions(spriteset->texture, textureIdx);
+//	glm::vec4 uvs = spriteset->getUVCoords(id);
+//
+//	addQuad(transform.getModelMat(), uvs, textureIdx, color);
+//}
+//
+//void Renderer2D::renderTilemap(Transform& transform, Tilemap& tilemap) {
+//	int baseX = tilemap.getSpriteset()->tileSize / 2;
+//	int baseY = tilemap.getSpriteset()->tileSize / 2;
+//
+//	for (int y = 0; y < tilemap.height; y++) {
+//		for (int x = 0; x < tilemap.width; x++) {
+//			int tileId = tilemap.get({ x, y });
+//			
+//			// skip empty
+//			if (tileId >= 0) {
+//				// we have to retrive the texture index each iteration to ensure we don't overflow the quad buffer
+//				float textureIndex = 0;
+//				checkQuadFlushConditions(tilemap.getSpriteset()->texture, textureIndex);
+//
+//				// this is an absolute block of a unit. Basically converts the tile position to an onscreen position in coords.
+//				// this is very specific for an orthographic camera
+//				// also, it doesn't support transforming the tilemap, which is defininitely a TODO!
+//				glm::mat4 modelMat = glm::translate(glm::mat4(1), { 
+//					((float)x * tilemap.getSpriteset()->tileSize) + (float) baseX, 
+//					((float)y * tilemap.getSpriteset()->tileSize) + (float) baseY, 
+//					0.0f }) * glm::scale(glm::mat4(1), glm::vec3(tilemap.getSpriteset()->tileSize / 2));
+//
+//				// finally, add the quad to the buffer
+//				addQuad(modelMat, tilemap.getSpriteset()->getUVCoords(tileId), textureIndex, { 1,1,1,1 });
+//			}
+//		}
+//	}
+//}
 
 void Renderer2D::drawLine(glm::vec2 pos1, glm::vec2 pos2, glm::vec4 color) {
 	checkLineFlushConditions();

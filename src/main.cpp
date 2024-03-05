@@ -11,22 +11,12 @@
 #include <log.h>
 
 // project files
-#include "application.h"
+#include "game.h"
 
-/*
-* Features to implements before Github Game Off 2023
-* 1. 2D rendering
-* 2. Text rendering
-* 3. Scene system
-* 4. Audio system
-* 5. ImGUI
-* 6. ECS
-*/
-
-Application* app;
+Game* game = nullptr;
 
 void game_loop() {
-	app->update();
+	game->update();
 }
 
 int main() {
@@ -34,13 +24,13 @@ int main() {
 		Log::init();
 		//Log::getGameLog()->info("CWD: {}", std::filesystem::current_path().string());
 		Log::getGameLog()->info("Game startup...");
-		app = new Application();
+		game = new Game();
 
 #ifdef __EMSCRIPTEN__
 		emscripten_set_main_loop(game_loop, 0, false);
 #else
-		while (!app->win->shouldClose()) {
-			app->update();
+		while (!game->win->shouldClose()) {
+			game->update();
 		}
 #endif
 

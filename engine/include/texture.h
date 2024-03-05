@@ -29,6 +29,8 @@ public:
 	~Texture() { glDeleteTextures(1, &this->handle); };
 
 	const glm::ivec2& getSize() { return this->size; };
+	int width() { return size.x; };
+	int height() { return size.y; };
 	void bind() { glBindTexture(GL_TEXTURE_2D, this->handle); };
 
 	bool isTexture() { return glIsTexture(handle); };

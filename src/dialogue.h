@@ -7,6 +7,8 @@
 #include <renderer2d.h>
 #include <ui/text-renderer.h>
 
+#include <scene/sprite_actor.h>
+
 class DialogueSystem {
 private:
 	std::vector<std::string> lines;
@@ -21,11 +23,9 @@ private:
 
 	std::shared_ptr<Texture> uiTexture;
 
-	Transform bgTransform;
-	SpriteComponent bgSprite;
+	SpriteActor background;
 
-	Transform pointerTransform;
-	SpriteComponent pointerSprite;
+	SpriteActor pointer;
 
 	double timer;
 public:
@@ -37,6 +37,6 @@ public:
 	void setDialogue(std::string text);
 
 	void update(double deltaTime);
-	void render(std::shared_ptr<Camera> camera, std::shared_ptr<Renderer2D> renderer, std::shared_ptr<TextRenderer> textRenderer, std::shared_ptr<Font> largeFont);
+	void render(std::shared_ptr<Renderer2D> renderer, std::shared_ptr<TextRenderer> textRenderer, std::shared_ptr<Font> largeFont);
 
 };

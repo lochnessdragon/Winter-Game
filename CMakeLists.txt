@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 
+include (cmake/vs_source_groups.cmake)
+
 project(GameOff)
 set (CMAKE_CXX_STANDARD 17)
 
