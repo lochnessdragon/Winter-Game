@@ -10,11 +10,6 @@ Spriteset::Spriteset(std::shared_ptr<Texture> texture, int tileSize) : texture(t
 	tiles_per_row = texSize.x / tileSize;
 	tiles_per_col = texSize.y / tileSize;
 	Log::getRendererLog()->info("Loaded {} x {} tileset.", tiles_per_row, tiles_per_col);
-
-	for (uint32_t i = 0; i < getMaxId(); i++) {
-		glm::vec4 uv = getUVCoords(i);
-		Log::getRendererLog()->info(" - UV Coords for tile: {} = {}", i, glm::to_string(uv));
-	}
 }
 
 glm::vec4 Spriteset::getUVCoords(int tileId) {

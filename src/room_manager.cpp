@@ -2,6 +2,8 @@
 
 #include "consts.h"
 
+#include "log.h"
+
 RoomManager* RoomManager::singleton = nullptr;
 
 RoomManager::RoomManager() {
@@ -12,7 +14,7 @@ RoomManager::RoomManager(std::shared_ptr<Tilemap> tilemap) : tilemap(tilemap), c
 	singleton = this;
 }
 
-bool RoomManager::canMove(Direction going)
+bool RoomManager::hasNext(Direction going)
 {
 	RoomEntry entry = rooms.at(currentRoom);
 	switch (going) {
@@ -54,6 +56,11 @@ glm::vec2 RoomManager::next(Direction going, glm::vec2 playerPos)
 		next_room_id = entry.right;
 		nextPlayerPos.x = 0.0f;
 		break;
+	}
+
+	if (next_room_id == "") {
+		Log::getGameLog()->warn("No room in direction: {}!", going);
+		return playerPos;
 	}
 
 	RoomEntry next = rooms.at(next_room_id);

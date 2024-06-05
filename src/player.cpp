@@ -28,7 +28,7 @@ void Player::update(double deltaTime, std::shared_ptr<Tilemap> tilemap) {
 	// TODO: Implement physics stepping
 
 	glm::vec2 test_player_pos = position;
-	
+
 	// check the tiles in the x plane
 	// apply the move in the x direction
 	test_player_pos.x += displacement.x;
@@ -36,7 +36,6 @@ void Player::update(double deltaTime, std::shared_ptr<Tilemap> tilemap) {
 	// check around for overlaps.
 	// get the position of the player in tilemap coords
 	int x_col = (test_player_pos.x + colliderOffset.x + copysign(colliderSize.x * scale.x, displacement.x)) / tilemap->getSpriteset()->tileSize;
-
 	int bottom = (test_player_pos.y + colliderOffset.y - colliderSize.y * scale.y) / tilemap->getSpriteset()->tileSize;
 	int top = (test_player_pos.y + colliderOffset.y + colliderSize.y * scale.y) / tilemap->getSpriteset()->tileSize;
 
@@ -55,7 +54,12 @@ void Player::update(double deltaTime, std::shared_ptr<Tilemap> tilemap) {
 		}
 	}
 
+	// if we don't have rooms on our left or our right, clamp the player to the screen bounds.
+	collides = collides || (!RoomManager::get()->hasNext(Direction::Left) && (test_player_pos.x < (colliderSize.x * scale.x - colliderOffset.x)));
+	collides = collides || (!RoomManager::get()->hasNext(Direction::Right) && (test_player_pos.x > (SCREEN_WIDTH - (colliderSize.x * scale.x + colliderOffset.x))));
+
 	if (collides) {
+		Log::getGameLog()->info("Collides!");
 		// halt movement, snapping to edge.
 		int edge_x = (x_col + (displacement.x < 0 ? 1 : 0)) * tilemap->getSpriteset()->tileSize; // the x position of the collision edge
 		float colliderRadius = colliderSize.x * scale.x; // not technically radius in the purely mathmatical sense, but represents the distance between the center of the collider and its edge (top or bottom)
@@ -107,16 +111,16 @@ void Player::update(double deltaTime, std::shared_ptr<Tilemap> tilemap) {
 	position += displacement;
 
 	// load new room if within a certain distance from the side of the screen
-	if (position.x < 0.0f) {
+	if (position.x < 0.0f && RoomManager::get()->hasNext(Direction::Left)) {
 		// load west
 		position = RoomManager::get()->next(Direction::Left, position);
-	} else if (position.x > SCREEN_WIDTH) {
+	} else if (position.x > SCREEN_WIDTH && RoomManager::get()->hasNext(Direction::Right)) {
 		// load east
 		position = RoomManager::get()->next(Direction::Right, position);
-	} else if (position.y < 0.0f) {
+	} else if (position.y < 0.0f && RoomManager::get()->hasNext(Direction::Down)) {
 		// load south
 		position = RoomManager::get()->next(Direction::Down, position);
-	} else if (position.y > SCREEN_HEIGHT) {
+	} else if (position.y > SCREEN_HEIGHT && RoomManager::get()->hasNext(Direction::Up)) {
 		// load north
 		position = RoomManager::get()->next(Direction::Up, position);
 	}

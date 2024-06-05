@@ -24,6 +24,7 @@
 // - proper collision detection
 // - actor collision
 // - custom objects in tilemap files
+// - Pixel basis coordinates (none of this scaling stuff)
 
 Game::Game() : showColliders(false) {
 	win = std::make_shared<Window>("Better Together", 960, 540);
@@ -51,7 +52,7 @@ Game::Game() : showColliders(false) {
 	large_font = std::make_shared<Font>("res/fonts/slkscr.ttf");
 
 	glm::ivec2 winSize = win->getSize();
-	Log::getGameLog()->trace("Creating a camera: win_size x={} y={}", winSize.x, winSize.y);
+	Log::getGameLog()->trace("Creating pixel perfect camera: win_size x={} y={}", winSize.x, winSize.y);
 	camera = std::make_shared<PixelPerfectCamera>(win, SCREEN_WIDTH, SCREEN_HEIGHT, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0));
 
 	textRenderer = std::make_shared<TextRenderer>(camera->getFBO());
@@ -65,6 +66,9 @@ Game::Game() : showColliders(false) {
 
 	// actors
 	player = std::make_shared<Player>(40.0f);
+	house = std::make_shared<SpriteActor>(std::make_shared<Texture>("res/textures/player_cabin.png"));
+	house->position = { SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f };
+	house->recalculateModelMat();
 
 	// this does 2 reads, we should optimize
 	bg = std::make_shared<Tilemap>(0, 0, std::make_shared<Spriteset>(std::make_shared<Texture>("res/textures/tileset.png"), 8));
@@ -100,6 +104,7 @@ void Game::update() {
 	
 	bg->render(renderer2d);
 
+	house->render(renderer2d);
 	player->render(renderer2d);
 
 	dialogue->render(renderer2d, textRenderer, large_font);

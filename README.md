@@ -1,5 +1,13 @@
-# Game Engine
-A small game engine
+# Winter Game
+A small game
+
+## Supported Platforms:
+- Windows
+- Linux 
+- MacOS
+- Web (HTML)
+
+# Compilation
 
 ## Dependency Management
  The cmake script will first check if the package is intalled on the system.

@@ -13,6 +13,7 @@
 #include "tilemap_editor.h"
 #include "player.h"
 #include "room_manager.h"
+#include <scene/sprite_actor.h>
 
 // Game files
 #include "dialogue.h"
@@ -39,6 +40,7 @@ private:
 	// Actors
 	std::shared_ptr<Tilemap> bg;
 	std::shared_ptr<Player> player;
+	std::shared_ptr<SpriteActor> house;
 
 	double deltaTime;
 	double lastTime;

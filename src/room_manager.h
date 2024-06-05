@@ -29,8 +29,8 @@ public:
 
 	void setTilemap(std::shared_ptr<Tilemap> tilemap) { this->tilemap = tilemap; };
 
-	// returns true if their is a room in the specified direction
-	bool canMove(Direction going);
+	// returns true if there is a room in the specified direction
+	bool hasNext(Direction going);
 	// loads the next room in a direction and returns the position that the player should start at.
 	glm::vec2 next(Direction going, glm::vec2 playerPos);
 	// loads the next room (any room) and returns the position that the player should go to.

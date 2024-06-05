@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.11)
 
 include (cmake/vs_source_groups.cmake)
 
-project(GameOff)
+project(WinterGame)
 set (CMAKE_CXX_STANDARD 17)
 
 if(CMAKE_CXX_COMPILER MATCHES "/em\\+\\+(-[a-zA-Z0-9.])?$")
@@ -23,18 +23,18 @@ add_subdirectory(engine/)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 
-add_executable(GameOff ${SOURCES})
-target_link_libraries(GameOff Engine)
-include_directories(GameOff "engine/include/")
+add_executable(WinterGame ${SOURCES})
+target_link_libraries(WinterGame Engine)
+include_directories(WinterGame "engine/include/")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Emscripten")
   # tell emscripten to link glfw
-  # target_compile_options(GameOff PUBLIC "--preload-file res@/res")
-  target_link_options(GameOff PUBLIC "-sUSE_GLFW=3" "-sMAX_WEBGL_VERSION=2" "--preload-file" "../res@res")
+  # target_compile_options(WinterGame PUBLIC "--preload-file res@/res")
+  target_link_options(WinterGame PUBLIC "-sUSE_GLFW=3" "-sMAX_WEBGL_VERSION=2" "--preload-file" "../res@res")
 endif()
 
 if( CMAKE_COMPILER_IS_GNUCC )
     # there have been some weird bugs before w/ cmake reporting gcc on windows.
-    target_compile_options(GameOff PRIVATE -Wall -Wextra)
+    target_compile_options(WinterGame PRIVATE -Wall -Wextra)
 endif()
 
 if( MSVC )
@@ -43,22 +43,22 @@ if( MSVC )
          CMAKE_CXX_FLAGS_DEBUG
          "${CMAKE_CXX_FLAGS_DEBUG}")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /ZI")
-    string(REGEX REPLACE "/W[1234]" ""
-         CMAKE_CXX_FLAGS_DEBUG
-         "${CMAKE_CXX_FLAGS_DEBUG}")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W4")
+    # string(REGEX REPLACE "/W[1234]" ""
+    #     CMAKE_CXX_FLAGS_DEBUG
+    #     "${CMAKE_CXX_FLAGS_DEBUG}")
+    # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W4")
 
-    set_property(GLOBAL PROPERTY VS_STARTUP_PROJECT "GameOff")
-    set_property(TARGET GameOff PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    set_property(GLOBAL PROPERTY VS_STARTUP_PROJECT "WinterGame")
+    set_property(TARGET WinterGame PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     message("Setting VS Working Dir to: ${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
 
 if( APPLE )
-    set_target_properties(GameOff PROPERTIES XCODE_GENERATE_SCHEME TRUE XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    set_target_properties(WinterGame PROPERTIES XCODE_GENERATE_SCHEME TRUE XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
 # copy over OpenAL32.dll
-add_custom_command(TARGET GameOff
+add_custom_command(TARGET WinterGame
   POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${OpenAL_BINARY_DIR}/$<CONFIGURATION>/OpenAL32.dll ${GameOff_BINARY_DIR}/$<CONFIGURATION>/.
+  COMMAND ${CMAKE_COMMAND} -E copy ${OpenAL_BINARY_DIR}/$<CONFIGURATION>/OpenAL32.dll ${WinterGame_BINARY_DIR}/$<CONFIGURATION>/.
 )
