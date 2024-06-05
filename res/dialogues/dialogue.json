@@ -1,0 +1,7 @@
+[
+	{
+		"name": "start",
+		"text": "Woah there adventurer! Are you quite sure you're ready to take on this magnificent quest?",
+		"next": "end"
+	}
+]

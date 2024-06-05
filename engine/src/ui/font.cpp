@@ -53,7 +53,7 @@ Texture Font::generateAtlas(const std::string& filename) {
             generator.setAttributes(attributes);
             generator.setThreadCount(4); // have to look at multithreading (MT)
             // Generate atlas bitmap
-            generator.generate(glyphs.data(), glyphs.size());
+            generator.generate(glyphs.data(), (int) glyphs.size());
             // The atlas bitmap can now be retrieved via atlasStorage as a BitmapConstRef.
             // The glyphs array (or fontGeometry) contains positioning data for typesetting text.
             msdfgen::BitmapConstRef<msdf_atlas::byte, 3> bitmap = (msdfgen::BitmapConstRef<msdf_atlas::byte, 3>) generator.atlasStorage();
@@ -63,7 +63,7 @@ Texture Font::generateAtlas(const std::string& filename) {
                 fontName = "<no-name-provided>";
 
             // somehow, we need to copy the bitmap and glyphs outside the scope.
-            Log::getRendererLog()->info("Generated font atlas: {} x {} for: ", bitmap.width, bitmap.height, fontName);
+            Log::getRendererLog()->info("Generated font atlas: {} x {} for: {} ({})", bitmap.width, bitmap.height, fontName, filename);
 
             // Cleanup before return
             msdfgen::destroyFont(font);
@@ -75,11 +75,14 @@ Texture Font::generateAtlas(const std::string& filename) {
             spec.format = GL_RGB;
             spec.scaling = TextureScaling::Linear;
             return Texture(spec, static_cast<const unsigned char*>(bitmap.pixels));
+        } else {
+            msdfgen::deinitializeFreetype(ft);
+            
+            throw std::runtime_error("MSDF Gen failed to load font: " + filename);
         }
-        msdfgen::deinitializeFreetype(ft);
+    } else {
+        throw std::runtime_error("Failed to intialize freetype when creating font file: " + filename);
     }
-
-    throw std::runtime_error("Failed to create font from file: " + filename);
 }
 
 Font::Font(const std::string& filename) : glyphs(), fontGeometry(&this->glyphs), atlas(generateAtlas(filename)) {}

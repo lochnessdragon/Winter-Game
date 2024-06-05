@@ -10,17 +10,21 @@ int Mesh::getDataSize(GLenum type) {
     }
 }
 
-Mesh::Mesh(const GLuint indices_length, const unsigned int* indices, const GLuint vertices_length, const float* vertices, const GLuint uvs_length, const float* uvs, MeshUsage usage) {
+Mesh::Mesh(MeshUsage usage) {
     if (usage == MeshUsage::Static) {
         this->usage = GL_STATIC_DRAW;
     }
     else {
         this->usage = GL_DYNAMIC_DRAW;
     }
-    
+
+    indicesBuffer = 0;
+
     glGenVertexArrays(1, &this->handle);
     this->bind();
+}
 
+Mesh::Mesh(const GLuint indices_length, const unsigned int* indices, const GLuint vertices_length, const float* vertices, const GLuint uvs_length, const float* uvs, MeshUsage usage) : Mesh(usage) {
     // vertices
     uint32_t floats_per_vertices = 3;
     if (vertices_length == uvs_length) {
@@ -33,26 +37,9 @@ Mesh::Mesh(const GLuint indices_length, const unsigned int* indices, const GLuin
 
     // uvs
     this->attachBuffer(GL_FLOAT, 2, uvs_length, (void*) uvs);
-    
-    // normals
-    // this->attachBuffer(GL_FLOAT, 3, normals_length, (void*) normals);
-
-    //// vertices
-    //glBindBuffer(GL_ARRAY_BUFFER, vbos[1]);
-    //glBufferData(GL_ARRAY_BUFFER, vertices_length, vertices, GL_STATIC_DRAW);
-    //glEnableVertexAttribArray(0);
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
-	
-    //// uvs
-    //glBindBuffer(GL_ARRAY_BUFFER, vbos[2]);
-    //glBufferData(GL_ARRAY_BUFFER, uvs_length, uv_data, GL_STATIC_DRAW);
-    //glEnableVertexAttribArray(1);
-    //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*) 0);
 
     // indices
-    glGenBuffers(1, &this->indicesBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->indicesBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_length, indices, this->usage);
+    this->setIndexBuffer(indices_length, indices);
 
     indexCount = indices_length / sizeof(int);
 }
@@ -71,6 +58,17 @@ GLuint Mesh::attachBuffer(GLenum dataType, int memberCount, GLuint dataLength, v
     this->vbos.push_back(newBuffer);
 
     return newIndex;
+}
+
+void Mesh::setIndexBuffer(const GLuint indices_length, const unsigned int* indices) {
+    this->bind();
+
+    if (indicesBuffer == 0) {
+        glGenBuffers(1, &this->indicesBuffer);
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->indicesBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_length, indices, this->usage);
 }
 
 void Mesh::setBuffer(uint32_t bufferIdx, const GLuint bufferSize, const void* data) {

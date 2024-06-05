@@ -1,13 +1,16 @@
 #include "camera.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <log.h>
-
+// System files
 #include <iostream>
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
+
+#include <log.h>
+#include <mesh_generator.h>
+
 // todo: tie camera to window so that the camera will update its aspect ratio with the window.
-Camera::Camera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation) {
+Camera::Camera(glm::vec3 position, glm::vec3 rotation) {
 	this->m_position = position;
     this->m_eulerRotation = rotation;
 	this->rotation = glm::quat(rotation);
@@ -40,11 +43,17 @@ glm::mat4 Camera::getViewMat() {
 	return viewMat;
 }
 
-OrthoCamera::OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, glm::ivec2 size) : Camera(window, position, rotation), fbSize(size) {
+OrthoCamera::OrthoCamera(glm::ivec2 size, glm::vec3 position, glm::vec3 rotation) : Camera(position, rotation), fbSize(size) {
+    this->calculateProjMat();
+}
+
+OrthoCamera::OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation) : Camera(position, rotation), fbSize(window->getSize()) {
     this->calculateProjMat();
 
-    window->getWindowResizeHandler().addListener([=](const WindowResizeEventData& event) -> void {
+    window->getWindowResizeHandler().addListener([=](const WindowResizeEventData& event) {
         this->fbSize = glm::ivec2(event.width, event.height);
+        calculateProjMat();
+        return false;
     });
 }
 
@@ -55,12 +64,71 @@ void OrthoCamera::calculateProjMat() {
     //Log::getRendererLog()->trace("Projection Mat: {}\n Fb: {}", glm::to_string(projMat), glm::to_string(this->fbSize));
 }
 
-PerspectiveCamera::PerspectiveCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, float aspect, float fov, float near, float far) : Camera(window, position, rotation), aspect(aspect), fov(fov), near(near), far(far) {
+PixelPerfectCamera::PixelPerfectCamera(std::shared_ptr<Window> window, int width, int height, glm::vec3 position, glm::vec3 rotation) : OrthoCamera(glm::ivec2(width, height), position, rotation), window(window), framebuffer(std::make_shared<Framebuffer>(width, height)), modelMat(glm::mat4(1.0f)), mesh(createQuad()), screenShader("res/shaders/post/copy.vert", "res/shaders/post/copy.frag") {
+    calculateSizing(window->getSize());
+    
+    window->getWindowResizeHandler().addListener([=](const WindowResizeEventData& event) {
+        calculateSizing(glm::ivec2(event.width, event.height));
+
+        return false;
+    });
+}
+
+void PixelPerfectCamera::startScene() {
+    framebuffer->bind();
+    glViewport(0, 0, framebuffer->getSize().x, framebuffer->getSize().y);
+}
+
+void PixelPerfectCamera::endScene() {
+    framebuffer->unbind();
+
+    window->updateSize();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    screenShader.use();
+    screenShader.loadUniform("texture", 0);
+    screenShader.loadUniform("modelMat", modelMat);
+
+    mesh->bind();
+    glDisable(GL_DEPTH_TEST);
+    glActiveTexture(GL_TEXTURE0);
+    framebuffer->bindColorBuffer();
+    
+    glDrawElements(GL_TRIANGLES, mesh->getIndexCount(), GL_UNSIGNED_INT, 0);
+}
+
+void PixelPerfectCamera::calculateSizing(glm::ivec2 actual) {
+    // calculate new rectangle coords + size
+    float desiredRatio = (float) this->fbSize.x / (float) this->fbSize.y;
+    float ratio = (float)actual.x / (float)actual.y;
+    Log::getRendererLog()->info("Fb and cam ratios: fb= {} cam= {}", desiredRatio, ratio);
+
+    float width = 1;
+    float height = 1;
+    if (ratio > desiredRatio) {
+        // wider than tall
+        width = desiredRatio * (1 / ratio);
+    }
+    else if (ratio < desiredRatio) {
+        // taller than wide
+        height = (1 / desiredRatio) * ratio;
+    }
+
+    Log::getRendererLog()->info("Calculated camera scaling at {} x {}", width, height);
+
+    // calculate model mat
+    modelMat = glm::scale(glm::mat4(1.0f), glm::vec3(width, height, 1.0f));
+}
+
+PerspectiveCamera::PerspectiveCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, float aspect, float fov, float near, float far) : Camera(position, rotation), aspect(aspect), fov(fov), near(near), far(far) {
     this->calculateProjMat();
     
-    window->getWindowResizeHandler().addListener([=](const WindowResizeEventData& event) -> void {
+    window->getWindowResizeHandler().addListener([=](const WindowResizeEventData& event) {
         this->aspect = (float)event.width / (float)event.height;
         calculateProjMat();
+        return false;
     });
 }
 

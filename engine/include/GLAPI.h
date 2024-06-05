@@ -9,3 +9,5 @@
 // regular ole glad.
 #include <glad/glad.h>
 #endif
+
+#include <GLFW/glfw3.h>

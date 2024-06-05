@@ -1,4 +1,5 @@
 // version directive handled by shader class
+// glyph.vert - vertex shader for the text rendering subrotinues
 precision highp float;
 
 layout (location = 0) in vec2 vPos;
@@ -11,5 +12,5 @@ out vec2 uv;
 void main() {
 	uv = vUv; // and that's the easy one
 
-	gl_Position = projMat * vec4(vPos, 0.0, 1.0);
+	gl_Position = projMat * vec4(vPos, 1.0, 1.0);
 }

@@ -17,14 +17,24 @@ void Window::glfwResizeCallback(GLFWwindow* window, int width, int height) {
     windowWrapper->windowResizeEvent.dispatch({ width, height });
 }
 
+void Window::updateSize() {
+    glm::ivec2 size = getSize();
+    glViewport(0, 0, size.x, size.y);
+}
+
 void Window::glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     Window* windowWrapper = (Window*)glfwGetWindowUserPointer(window);
-    windowWrapper->keyEvent.dispatch({key, scancode, action, mods});
+    windowWrapper->input->getKeyEventHandler().dispatch({ key, scancode, action, mods });
 }
 
 void Window::glfwMouseMoveCallback(GLFWwindow* window, double xpos, double ypos) {
 	Window* windowWrapper = (Window*) glfwGetWindowUserPointer(window);
-	windowWrapper->mouseMoveEvent.dispatch(glm::vec2(xpos, ypos));
+	windowWrapper->input->getMouseMoveEventHandler().dispatch(glm::vec2(xpos, ypos));
+}
+
+void Window::glfwMouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    Window* windowWrapper = (Window*)glfwGetWindowUserPointer(window);
+    windowWrapper->input->getMouseButtonEventHandler().dispatch({button, action, mods});
 }
 
 Window::Window(const std::string title, int width, int height) {
@@ -53,6 +63,7 @@ Window::Window(const std::string title, int width, int height) {
     glfwSetFramebufferSizeCallback(this->handle, Window::glfwResizeCallback);
     glfwSetKeyCallback(this->handle, Window::glfwKeyCallback);
 	glfwSetCursorPosCallback(this->handle, Window::glfwMouseMoveCallback);
+    glfwSetMouseButtonCallback(this->handle, Window::glfwMouseButtonCallback);
 
     glfwSetWindowUserPointer(this->handle, this);
 
@@ -70,6 +81,8 @@ Window::Window(const std::string title, int width, int height) {
         }
     }
 	#endif
+
+    input = std::make_shared<Input>(this->handle);
 
     WINDOW_COUNT++;
 }
@@ -95,7 +108,7 @@ void Window::swap() {
     glfwSwapBuffers(this->handle);
 }
 
-glm::ivec2 Window::getWindowSize() {
+glm::ivec2 Window::getSize() {
     glm::ivec2 size;
     glfwGetWindowSize(this->handle, &size.x, &size.y);
     return size;

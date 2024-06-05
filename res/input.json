@@ -1,0 +1,36 @@
+{
+	"walk": {
+		"type": "normalized_vec2",
+		"gamepad": [
+			"left_axis",
+			"dpad"
+		],
+		"keyboard": [
+			{
+				"axis_1": {
+					"pos": "d",
+					"neg": "a"
+				},
+				"axis_2": {
+					"pos": "w",
+					"neg": "s"
+				}
+			},
+			{
+				"axis_1": {
+					"pos": ">",
+					"neg": "<"
+				},
+				"axis_2": {
+					"pos": "^",
+					"neg": "V"
+				}
+			}
+		]
+	},
+	"interact": {
+		"type": "button",
+		"gamepad": ["a"],
+		"keyboard": ["z"]
+	}
+}

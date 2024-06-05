@@ -1,0 +1,38 @@
+{
+	"start": "home",
+	"start_pos": { "x": 50, "y": 50},
+	"rooms": [
+		{
+			"name": "home",
+			"bg": "home.bin",
+			"south": "outside_home",
+			"south_start": { "x": 50, "y": 50 }
+		}, 
+		{
+			"name": "outside_home",
+			"bg": "outside1.bin",
+			"east": "path_town"
+		}, 
+		{
+			"name": "path_town",
+			"bg": "outside2.bin",
+			"west": "outside_home",
+			"east": "town",
+		}, 
+		{
+			"name": "town",
+			"bg": "town",
+			"west": "path_town",
+			"east": "grandfathers_house"
+		},
+		{
+			"name": "grandfathers_house",
+			"bg": "grandfathers_house",
+			"west": "town"
+		},
+		{
+			"name": "gf_foyer",
+			"west": "grandfathers_house",
+		}
+	]
+}

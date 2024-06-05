@@ -12,6 +12,9 @@
 #endif
 
 #include "window.h"
+#include "framebuffer.h"
+#include "shader.h"
+#include "mesh.h"
 #include <memory>
 
 class Camera {
@@ -25,10 +28,10 @@ protected:
 	
 	bool dirty;
 public:
-    Camera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation);
+    Camera(glm::vec3 position, glm::vec3 rotation);
     ~Camera();
 
-    virtual void calculateViewMat();
+    void calculateViewMat();
     virtual void calculateProjMat() = 0;
 
     glm::vec3& position() { return m_position; }
@@ -45,13 +48,33 @@ public:
 };
 
 class OrthoCamera : public Camera {
-private:
+protected:
     glm::ivec2 fbSize;
 public:
-    OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation, glm::ivec2 size);
+    OrthoCamera(glm::ivec2 size, glm::vec3 position, glm::vec3 rotation);
+    OrthoCamera(std::shared_ptr<Window> window, glm::vec3 position, glm::vec3 rotation);
     ~OrthoCamera();
 
     void calculateProjMat();
+};
+
+class PixelPerfectCamera : public OrthoCamera {
+private:
+    std::shared_ptr<Framebuffer> framebuffer;
+    std::shared_ptr<Mesh> mesh;
+    Shader screenShader;
+    glm::mat4 modelMat;
+
+    std::shared_ptr<Window> window;
+public:
+    PixelPerfectCamera(std::shared_ptr<Window> window, int width, int height, glm::vec3 position, glm::vec3 rotation);
+
+    void startScene();
+    void endScene();
+
+    void calculateSizing(glm::ivec2 actual);
+
+    std::shared_ptr<Framebuffer> getFBO() { return framebuffer; };
 };
 
 class PerspectiveCamera : public Camera {
